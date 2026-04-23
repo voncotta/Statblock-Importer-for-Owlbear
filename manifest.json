@@ -1,0 +1,57 @@
+{
+  "name": "Symbaroum GM Stat Blocks",
+  "description": "Import stat blocks from the Symbaroum Stat Block Creator and view them on tokens. GM eyes only.",
+  "author": "GM",
+  "version": "2.0.0",
+  "icon": "/icon.svg",
+  "tokens": [],
+  "action": {
+    "title": "GM Stat Blocks",
+    "icon": "/icon.svg",
+    "popover": {
+      "url": "/action.html",
+      "height": 520,
+      "width": 360
+    }
+  },
+  "contextMenu": [
+    {
+      "id": "view-statblock",
+      "icons": [
+        {
+          "icon": "/eye.svg",
+          "label": "View Stat Block",
+          "filter": {
+            "every": [
+              { "key": "layer", "value": "CHARACTER" }
+            ]
+          }
+        }
+      ],
+      "embed": {
+        "url": "/statblock-popover.html",
+        "height": 620,
+        "width": 440
+      }
+    },
+    {
+      "id": "edit-statblock",
+      "icons": [
+        {
+          "icon": "/edit.svg",
+          "label": "Edit Stat Block",
+          "filter": {
+            "every": [
+              { "key": "layer", "value": "CHARACTER" }
+            ]
+          }
+        }
+      ],
+      "embed": {
+        "url": "/edit-statblock.html",
+        "height": 560,
+        "width": 380
+      }
+    }
+  ]
+}

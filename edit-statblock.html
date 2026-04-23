@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Assign Stat Block</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Crimson+Text:ital,wght@0,400;0,600;1,400;1,600&display=swap" rel="stylesheet"/>
+  <style>
+    :root{
+      --parchment:#f0e4c4; --parchment-dark:#e0cc96;
+      --ink:#1a1208; --ink-faded:#5c3d1e;
+      --red:#6b2020; --brown:#8b7355; --gold:#c4a055;
+      --ui-bg:#2a1f0e; --ui-surface:#3d2e14; --ui-border:#6b5030; --ui-text:#e8dfc8;
+    }
+    *{box-sizing:border-box;margin:0;padding:0;}
+    body{background:var(--ui-bg);color:var(--ui-text);font-family:'Crimson Text',Georgia,serif;font-size:14px;}
+
+    .header{background:var(--ui-surface);border-bottom:2px solid var(--gold);padding:10px 14px;display:flex;align-items:center;justify-content:space-between;}
+    .header-title{font-family:'Cinzel',serif;font-size:1.1rem;color:var(--gold);}
+    .header-token{font-size:12px;color:#9b8b6a;font-style:italic;}
+
+    /* Status bar */
+    .status-bar{padding:7px 14px;font-size:12px;display:none;}
+    .status-bar.ok{background:#1e3a1e;color:#7dbf8e;display:block;}
+    .status-bar.err{background:#3a1e1e;color:#e88;display:block;}
+
+    /* State indicator */
+    .state-panel{padding:10px 14px;border-bottom:1px solid var(--ui-border);}
+    .state-label{font-size:11px;color:#9b8b6a;text-transform:uppercase;letter-spacing:0.07em;margin-bottom:5px;}
+    .state-name{font-family:'Cinzel',serif;font-size:1rem;color:var(--gold);}
+    .state-meta{font-size:12px;color:#9b8b6a;font-style:italic;margin-top:2px;}
+    .no-state{font-style:italic;color:#7b6a4a;font-size:13px;}
+
+    /* Main action area */
+    .actions{padding:12px 14px;display:flex;flex-direction:column;gap:9px;}
+
+    /* Big import button */
+    .import-btn{
+      background:var(--gold);color:var(--ink);border:none;border-radius:4px;
+      font-family:'Cinzel',serif;font-size:1rem;font-weight:700;
+      padding:12px;cursor:pointer;width:100%;text-align:center;
+      letter-spacing:0.03em;transition:background 0.15s;
+    }
+    .import-btn:hover{background:#d4b060;}
+    .import-hint{font-size:11px;color:#7b6a4a;font-style:italic;text-align:center;margin-top:-4px;}
+
+    /* Divider */
+    .or-divider{display:flex;align-items:center;gap:8px;color:#6b5030;font-size:12px;}
+    .or-divider::before,.or-divider::after{content:'';flex:1;height:1px;background:var(--ui-border);}
+
+    /* GM Notes section */
+    .notes-section{display:flex;flex-direction:column;gap:6px;}
+    .notes-label{font-size:11px;color:#9b8b6a;text-transform:uppercase;letter-spacing:0.07em;}
+    textarea{
+      background:#221808;border:1px solid var(--ui-border);border-radius:3px;
+      color:var(--ui-text);font-family:'Crimson Text',Georgia,serif;font-size:13px;
+      padding:7px 9px;width:100%;resize:vertical;min-height:80px;
+    }
+    textarea:focus{outline:none;border-color:var(--gold);}
+    .notes-hint{font-size:11px;color:#5b4a30;font-style:italic;}
+
+    /* Save notes btn */
+    .save-notes-btn{
+      background:transparent;border:1px solid var(--ui-border);border-radius:3px;
+      color:var(--gold);font-family:'Cinzel',serif;font-size:0.88rem;
+      padding:7px;cursor:pointer;width:100%;
+      transition:border-color 0.15s;
+    }
+    .save-notes-btn:hover{border-color:var(--gold);}
+
+    /* Clear btn */
+    .clear-btn{
+      background:transparent;border:1px solid #5a2020;border-radius:3px;
+      color:#c06060;font-family:'Crimson Text',serif;font-size:13px;
+      padding:6px;cursor:pointer;width:100%;
+    }
+    .clear-btn:hover{border-color:#c06060;color:#e07070;}
+
+    /* Preview summary */
+    .preview-card{background:var(--ui-surface);border:1px solid var(--ui-border);border-radius:4px;padding:10px 12px;margin-top:4px;}
+    .preview-name{font-family:'Cinzel',serif;font-size:1rem;color:var(--gold);}
+    .preview-meta{font-size:12px;color:#9b8b6a;font-style:italic;margin-top:2px;line-height:1.5;}
+    .preview-attrs{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px;}
+    .attr-pill{background:#221808;border:1px solid var(--ui-border);border-radius:2px;padding:2px 6px;font-size:11px;color:var(--ui-text);}
+    .attr-pill span{color:var(--gold);font-weight:600;margin-left:3px;}
+
+    /* Hidden file input */
+    #json-file-input{display:none;}
+  </style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-title">📜 Assign Stat Block</div>
+  <div class="header-token" id="token-label">Loading…</div>
+</div>
+
+<div class="status-bar" id="status-bar"></div>
+
+<!-- Current state indicator -->
+<div class="state-panel">
+  <div class="state-label">Current stat block</div>
+  <div id="current-state"><div class="no-state">None assigned</div></div>
+</div>
+
+<div class="actions">
+
+  <!-- Primary action: import JSON -->
+  <button class="import-btn" id="import-btn">⬆ Import Symbaroum JSON</button>
+  <div class="import-hint">Export from the Symbaroum Stat Block Creator, then import here</div>
+
+  <div class="or-divider">or</div>
+
+  <!-- GM Notes (always editable, stored alongside the imported state) -->
+  <div class="notes-section">
+    <div class="notes-label">GM Notes (private, not exported)</div>
+    <textarea id="gm-notes" placeholder="Tactics, lore, encounter notes, corruption tracker…"></textarea>
+    <div class="notes-hint">These notes are only visible to you and are never part of the exported JSON.</div>
+    <button class="save-notes-btn" id="save-notes-btn">Save Notes</button>
+  </div>
+
+  <div class="or-divider"></div>
+
+  <button class="clear-btn" id="clear-btn">✕ Remove stat block from this token</button>
+</div>
+
+<!-- Hidden file input -->
+<input type="file" id="json-file-input" accept=".json,application/json"/>
+
+<script type="module">
+import OBR from "https://cdn.jsdelivr.net/npm/@owlbear-rodeo/sdk@2.3.0/+esm";
+const EXT_ID = "com.symbaroum.statblocks";
+
+let currentItemId = null;
+let currentState  = null;
+
+function showStatus(msg, isErr=false) {
+  const el = document.getElementById("status-bar");
+  el.textContent = msg;
+  el.className = "status-bar " + (isErr?"err":"ok");
+  setTimeout(()=>{ el.style.display="none"; }, 3000);
+}
+
+function getAttrSummary(state) {
+  if (!state?.attrs) return '';
+  const a = state.attrs;
+  const ATTRS = [{id:'acc',label:'Acc'},{id:'cun',label:'Cun'},{id:'dis',label:'Dis'},{id:'per',label:'Per'},
+                 {id:'qui',label:'Qui'},{id:'res',label:'Res'},{id:'str',label:'Str'},{id:'vig',label:'Vig'}];
+  return ATTRS.map(x=>`<div class="attr-pill">${x.label}<span>${a[x.id]||'—'}</span></div>`).join('');
+}
+
+function renderCurrentState(state) {
+  const el = document.getElementById("current-state");
+  if (!state) { el.innerHTML = `<div class="no-state">None assigned</div>`; return; }
+  const f = state.fields||{};
+  const name = f.name||'Unnamed';
+  const race = state.raceCustom||f.race||'';
+  const abilities = (state.abilities||[]).map(a=>a.name).join(', ')||'—';
+  const saved = state._saved ? new Date(state._saved).toLocaleDateString() : '';
+  el.innerHTML = `
+    <div class="preview-card">
+      <div class="preview-name">${name}</div>
+      <div class="preview-meta">
+        ${race?race+'<br/>':''}
+        Abilities: ${abilities}
+        ${saved?`<br/>Saved: ${saved}`:''}
+      </div>
+      <div class="preview-attrs">${getAttrSummary(state)}</div>
+    </div>`;
+}
+
+function validateSymbaroumJSON(obj) {
+  // Must have _version and _app from the Symbaroum Stat Block Creator
+  if (!obj._version) throw new Error("Not a valid stat block file (missing _version).");
+  if (!obj._app?.includes('Symbaroum')) throw new Error("This JSON wasn't exported from the Symbaroum Stat Block Creator.");
+  return true;
+}
+
+async function saveStateToToken(state) {
+  await OBR.scene.items.updateItems([currentItemId], items => {
+    for (const item of items) {
+      if (!item.metadata) item.metadata = {};
+      item.metadata[`${EXT_ID}/statblock`] = state;
+    }
+  });
+}
+
+// ── Boot ──
+OBR.onReady(async () => {
+  const sel = await OBR.player.getSelection();
+  if (!sel?.length) { document.getElementById("token-label").textContent="No token selected"; return; }
+  currentItemId = sel[0];
+  const items = await OBR.scene.items.getItems([currentItemId]);
+  const item = items[0];
+  const tokenName = item?.name||"Unknown Token";
+  document.getElementById("token-label").textContent = tokenName;
+
+  // Load existing state
+  currentState = item?.metadata?.[`${EXT_ID}/statblock`]||null;
+  renderCurrentState(currentState);
+  if (currentState?._gmNotes) {
+    document.getElementById("gm-notes").value = currentState._gmNotes;
+  }
+
+  // ── Import JSON button ──
+  document.getElementById("import-btn").addEventListener("click", () => {
+    document.getElementById("json-file-input").click();
+  });
+
+  document.getElementById("json-file-input").addEventListener("change", async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    e.target.value = '';
+    try {
+      const text = await file.text();
+      const obj  = JSON.parse(text);
+      validateSymbaroumJSON(obj);
+
+      // Preserve existing GM notes if any
+      const existingNotes = currentState?._gmNotes || document.getElementById("gm-notes").value.trim();
+      if (existingNotes) obj._gmNotes = existingNotes;
+
+      await saveStateToToken(obj);
+      currentState = obj;
+      renderCurrentState(obj);
+      showStatus(`✔ Imported "${obj.fields?.name||file.name}" successfully!`);
+    } catch(err) {
+      showStatus("✕ " + err.message, true);
+    }
+  });
+
+  // ── Save notes ──
+  document.getElementById("save-notes-btn").addEventListener("click", async () => {
+    const notes = document.getElementById("gm-notes").value.trim();
+    if (!currentState) {
+      // No stat block yet — create a minimal shell to hold notes
+      const shell = { _version: 1, _app: 'GM Notes', _saved: new Date().toISOString(), fields:{}, attrs:{}, _gmNotes: notes };
+      await saveStateToToken(shell);
+      currentState = shell;
+      renderCurrentState(shell);
+    } else {
+      currentState._gmNotes = notes;
+      await saveStateToToken(currentState);
+    }
+    showStatus("✔ Notes saved.");
+  });
+
+  // ── Clear ──
+  document.getElementById("clear-btn").addEventListener("click", async () => {
+    if (!confirm(`Remove stat block from this token?`)) return;
+    await OBR.scene.items.updateItems([currentItemId], items => {
+      for (const item of items) {
+        if (item.metadata) delete item.metadata[`${EXT_ID}/statblock`];
+      }
+    });
+    currentState = null;
+    renderCurrentState(null);
+    document.getElementById("gm-notes").value = '';
+    showStatus("✔ Stat block cleared.");
+  });
+});
+</script>
+</body>
+</html>
