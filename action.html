@@ -6,281 +6,854 @@
   <title>GM Stat Blocks</title>
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Crimson+Text:ital,wght@0,400;0,600;1,400;1,600&display=swap" rel="stylesheet"/>
   <style>
-    :root{
-      --bg:#1a1a2e;--surface:#16213e;--border:#2a2a4a;
-      --text:#e0e0e0;--muted:#888;--gold:#c4a055;--red:#8b1a1a;
-      --hover:#0f3460;
+    :root {
+      --bg: #1c1c1e;
+      --surface: #2c2c2e;
+      --surface2: #3a3a3c;
+      --border: #3a3a3c;
+      --text: #f2f2f7;
+      --text2: #aeaeb2;
+      --gold: #d4a843;
+      --gold-dim: #8b6914;
+      --red: #8b1a1a;
+      --red-bright: #ff453a;
+      --green: #30d158;
+      --accent: #c4a055;
     }
-    *{box-sizing:border-box;margin:0;padding:0;}
-    body{background:var(--bg);color:var(--text);font-family:'Crimson Text',Georgia,serif;font-size:17px;min-height:100vh;}
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Crimson Text', Georgia, serif;
+      font-size: 16px;
+      min-height: 100vh;
+    }
 
-    .header{background:var(--surface);border-bottom:1px solid var(--border);padding:10px 14px;display:flex;align-items:center;justify-content:space-between;}
-    .header h1{font-family:'Cinzel',serif;font-size:1.05rem;color:var(--gold);letter-spacing:0.05em;}
-    .header-hint{font-size:11px;color:var(--muted);font-style:italic;}
+    /* ── HEADER ── */
+    .header {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 10px 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+    .header-title {
+      font-family: 'Cinzel', serif;
+      font-size: 0.95rem;
+      color: var(--gold);
+      letter-spacing: 0.05em;
+    }
+    .header-hint {
+      font-size: 11px;
+      color: var(--text2);
+      font-style: italic;
+    }
 
-    /* Token cards */
-    .card{border-bottom:1px solid var(--border);}
-    .card-header{display:flex;align-items:center;gap:10px;padding:10px 14px;cursor:pointer;transition:background 0.12s;user-select:none;}
-    .card-header:hover{background:var(--hover);}
-    .card-header.open{background:var(--hover);border-bottom:1px solid var(--border);}
-    .card-icon{width:34px;height:34px;border-radius:50%;background:var(--red);border:2px solid var(--gold);display:flex;align-items:center;justify-content:center;font-family:'Cinzel',serif;font-size:14px;font-weight:700;color:#f5e6c8;flex-shrink:0;}
-    .card-title{flex:1;min-width:0;}
-    .card-name{font-family:'Cinzel',serif;font-size:1rem;color:var(--gold);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-    .card-meta{font-size:11px;color:var(--muted);font-style:italic;margin-top:1px;}
-    .card-toggle{color:var(--muted);font-size:12px;transition:transform 0.2s;flex-shrink:0;}
-    .card-toggle.open{transform:rotate(180deg);}
+    /* ── CARDS ── */
+    .card { border-bottom: 1px solid var(--border); }
+    .card-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 14px;
+      cursor: pointer;
+      transition: background 0.12s;
+      user-select: none;
+    }
+    .card-header:hover { background: var(--surface2); }
+    .card-header.open { background: var(--surface2); }
+    .card-avatar {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      background: var(--red);
+      border: 2px solid var(--gold-dim);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Cinzel', serif;
+      font-size: 14px;
+      font-weight: 700;
+      color: #f5e6c8;
+      flex-shrink: 0;
+    }
+    .card-info { flex: 1; min-width: 0; }
+    .card-name {
+      font-family: 'Cinzel', serif;
+      font-size: 0.95rem;
+      color: var(--gold);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .card-sub {
+      font-size: 11px;
+      color: var(--text2);
+      font-style: italic;
+      margin-top: 1px;
+    }
+    .card-chevron {
+      color: var(--text2);
+      font-size: 10px;
+      transition: transform 0.2s;
+      flex-shrink: 0;
+    }
+    .card-chevron.open { transform: rotate(180deg); }
 
-    /* Stat block body — Owlbear dark theme */
-    .card-body{display:none;background:#0d1117;color:var(--text);}
-    .card-body.open{display:block;}
-    .sb{padding:14px 16px 12px;font-size:17px;}
+    .card-body { display: none; }
+    .card-body.open { display: block; }
 
-    .sb-name{font-family:'Cinzel',serif;font-size:1.3rem;font-weight:700;color:var(--gold);margin-bottom:3px;}
-    .sb-sub{font-style:italic;font-size:0.9rem;color:var(--muted);margin-bottom:8px;}
-    .sb-desc{font-size:0.95rem;font-style:italic;color:var(--muted);margin-bottom:8px;line-height:1.5;}
+    /* ── STAT BLOCK ── */
+    .sb {
+      padding: 14px 16px 14px;
+      background: var(--surface);
+      border-top: 1px solid var(--border);
+      font-size: 16px;
+      line-height: 1.5;
+    }
+    .sb-name {
+      font-family: 'Cinzel', serif;
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 1px;
+    }
+    .sb-sub {
+      font-size: 0.88rem;
+      font-style: italic;
+      color: var(--text2);
+      margin-bottom: 8px;
+    }
+    .sb-desc {
+      font-size: 0.9rem;
+      font-style: italic;
+      color: var(--text2);
+      margin-bottom: 8px;
+      line-height: 1.5;
+    }
+    .sb-divider-thick {
+      border: none;
+      border-top: 2px solid var(--gold-dim);
+      margin: 8px 0;
+      opacity: 0.5;
+    }
+    .sb-divider {
+      border: none;
+      border-top: 1px solid var(--border);
+      margin: 7px 0;
+    }
 
-    hr.thick{border:none;border-top:2px solid var(--gold);margin:8px 0;opacity:0.4;}
-    hr.thin{border:none;border-top:1px solid var(--border);margin:6px 0;}
-
-    /* Derived stats */
-    .derived-grid{display:grid;grid-template-columns:1fr 1fr;gap:4px;margin:6px 0;}
-    .derived-cell{background:var(--surface);border:1px solid var(--border);border-radius:4px;padding:5px 8px;}
-    .derived-label{font-size:10px;text-transform:uppercase;letter-spacing:0.07em;color:var(--muted);margin-bottom:1px;}
-    .derived-value{font-family:'Cinzel',serif;font-size:1.1rem;color:var(--text);font-weight:600;}
+    /* Derived 2x2 grid */
+    .derived-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 5px;
+      margin: 6px 0;
+    }
+    .derived-cell {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 5px;
+      padding: 5px 10px;
+    }
+    .derived-label {
+      font-size: 9px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text2);
+      margin-bottom: 1px;
+    }
+    .derived-value {
+      font-family: 'Cinzel', serif;
+      font-size: 1.15rem;
+      font-weight: 600;
+      color: var(--text);
+    }
+    .derived-note {
+      font-size: 10px;
+      color: var(--text2);
+      font-style: italic;
+      margin-top: 1px;
+    }
+    .armor-row {
+      font-size: 0.88rem;
+      color: var(--text2);
+      margin: 3px 0 4px;
+    }
+    .armor-row strong { color: var(--text); }
 
     /* Attributes */
-    .attr-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;margin:6px 0;}
-    .attr-cell{background:var(--surface);border:1px solid var(--border);border-radius:4px;padding:5px 2px;text-align:center;}
-    .attr-label{font-size:8px;text-transform:uppercase;letter-spacing:0.06em;color:var(--muted);font-weight:700;}
-    .attr-value{font-family:'Cinzel',serif;font-size:1.1rem;font-weight:700;}
-    .attr-low{color:#4ec94e;}.attr-mid{color:var(--text);}.attr-high{color:#e05555;}
+    .attr-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 4px;
+      margin: 6px 0;
+    }
+    .attr-cell {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 5px 2px;
+      text-align: center;
+    }
+    .attr-label {
+      font-size: 7.5px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text2);
+      font-weight: 700;
+    }
+    .attr-value {
+      font-family: 'Cinzel', serif;
+      font-size: 1.1rem;
+      font-weight: 700;
+      margin-top: 1px;
+    }
+    .attr-low  { color: var(--green); }
+    .attr-mid  { color: var(--text); }
+    .attr-high { color: var(--red-bright); }
 
     /* Section heading */
-    .section-head{font-family:'Cinzel',serif;font-size:0.75rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--gold);border-bottom:1px solid var(--border);padding-bottom:3px;margin:10px 0 6px;opacity:0.9;}
+    .section-head {
+      font-family: 'Cinzel', serif;
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--gold);
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 3px;
+      margin: 9px 0 6px;
+      opacity: 0.85;
+    }
+
+    /* Resistance badge */
+    .resistance-badge {
+      display: inline-block;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 3px 10px;
+      font-family: 'Cinzel', serif;
+      font-size: 0.85rem;
+      color: var(--text);
+      margin-bottom: 4px;
+    }
+    .cr-weak { color: var(--text2); }
+    .cr-ordinary { color: var(--green); }
+    .cr-challenging { color: #ffd60a; }
+    .cr-strong { color: #ff9f0a; }
+    .cr-mighty { color: var(--red-bright); }
+
+    /* Traits inline */
+    .traits-line {
+      font-size: 0.88rem;
+      color: var(--text2);
+      font-style: italic;
+      margin-bottom: 4px;
+    }
 
     /* Weapons */
-    .wp-block{margin-bottom:8px;font-size:1rem;line-height:1.5;}
-    .wp-name{font-weight:700;color:var(--text);}
-    .wp-badge{display:inline-block;background:var(--surface);border:1px solid var(--border);border-radius:3px;padding:1px 6px;font-size:0.82rem;margin-left:3px;color:var(--gold);}
-    .wp-fx{font-style:italic;color:var(--muted);font-size:0.9rem;margin-top:2px;}
+    .wp-block { margin-bottom: 7px; font-size: 0.95rem; line-height: 1.5; }
+    .wp-name { font-weight: 700; color: var(--text); }
+    .wp-badge {
+      display: inline-block;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 3px;
+      padding: 1px 6px;
+      font-size: 0.78rem;
+      margin-left: 4px;
+      color: var(--gold);
+      vertical-align: middle;
+    }
+    .wp-fx { font-style: italic; color: var(--text2); font-size: 0.88rem; margin-top: 2px; }
+    .wp-attacks { font-size: 0.88rem; color: var(--text2); font-style: italic; margin-top: 1px; }
 
-    /* Abilities & traits */
-    .ab-block{margin-bottom:6px;font-size:1rem;line-height:1.5;display:flex;align-items:center;gap:6px;}
-    .ab-name{font-weight:700;font-style:italic;color:var(--text);}
-    .ab-level{display:inline-block;background:var(--red);color:#f5e6c8;border-radius:3px;padding:1px 7px;font-size:0.75rem;font-family:'Cinzel',serif;font-weight:600;}
+    /* Abilities */
+    .ab-block { margin-bottom: 6px; font-size: 0.95rem; line-height: 1.5; }
+    .ab-name { font-weight: 700; font-style: italic; color: var(--text); }
+    .ab-level {
+      display: inline-block;
+      background: var(--red);
+      color: #f5e6c8;
+      border-radius: 3px;
+      padding: 1px 6px;
+      margin-left: 5px;
+      font-size: 0.72rem;
+      font-family: 'Cinzel', serif;
+      font-weight: 600;
+      vertical-align: middle;
+    }
+    .ab-note { font-style: italic; color: var(--text2); font-size: 0.85rem; margin-top: 1px; }
+
+    /* Traits */
+    .tr-block { margin-bottom: 5px; font-size: 0.95rem; line-height: 1.5; }
+    .tr-name { font-weight: 700; font-style: italic; color: var(--text); }
+    .tr-level {
+      display: inline-block;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      color: var(--text2);
+      border-radius: 3px;
+      padding: 1px 6px;
+      margin-left: 5px;
+      font-size: 0.72rem;
+      font-family: 'Cinzel', serif;
+      font-weight: 600;
+      vertical-align: middle;
+    }
 
     /* Boons */
-    .boon-line{font-size:1rem;line-height:1.5;margin-bottom:3px;color:var(--text);}
-    .burden-line{color:#e05555;}
+    .boon-line { font-size: 0.92rem; line-height: 1.55; margin-bottom: 2px; color: var(--text); }
+    .boon-line.burden { color: #ff6b6b; }
 
-    /* Tactics & notes */
-    .tactics{font-size:1rem;line-height:1.55;font-style:italic;background:var(--surface);border-left:3px solid var(--gold);padding:6px 10px;margin-top:4px;border-radius:0 4px 4px 0;opacity:0.9;}
-    .gm-notes{font-size:0.95rem;line-height:1.5;background:rgba(139,26,26,0.15);border-left:3px solid var(--red);padding:6px 10px;white-space:pre-wrap;border-radius:0 4px 4px 0;}
+    /* Tactics */
+    .tactics {
+      font-size: 0.92rem;
+      line-height: 1.6;
+      font-style: italic;
+      background: var(--surface2);
+      border-left: 3px solid var(--gold-dim);
+      padding: 6px 10px;
+      border-radius: 0 4px 4px 0;
+      color: var(--text2);
+    }
 
-    .empty{padding:36px 16px;text-align:center;color:var(--muted);font-style:italic;font-size:1rem;}
-    .empty .icon{font-size:32px;display:block;margin-bottom:8px;opacity:0.35;}
-    .footer{padding:9px 14px;border-top:1px solid var(--border);font-size:11px;color:var(--muted);line-height:1.6;}
+    /* GM Notes */
+    .gm-notes {
+      font-size: 0.88rem;
+      line-height: 1.5;
+      background: rgba(139,26,26,0.15);
+      border-left: 3px solid var(--red);
+      padding: 6px 10px;
+      white-space: pre-wrap;
+      border-radius: 0 4px 4px 0;
+      color: var(--text2);
+    }
+
+    /* Equipment */
+    .equip-line { font-size: 0.92rem; color: var(--text2); line-height: 1.6; }
+
+    /* Empty state */
+    .empty {
+      padding: 40px 16px;
+      text-align: center;
+      color: var(--text2);
+      font-style: italic;
+      font-size: 1rem;
+    }
+    .empty .icon { font-size: 32px; display: block; margin-bottom: 10px; opacity: 0.4; }
+
+    /* Footer */
+    .footer {
+      padding: 10px 14px;
+      border-top: 1px solid var(--border);
+      font-size: 11px;
+      color: var(--text2);
+      line-height: 1.7;
+      opacity: 0.75;
+    }
   </style>
 </head>
 <body>
+
 <div class="header">
-  <h1>📜 GM Stat Blocks</h1>
+  <span class="header-title">📜 GM Stat Blocks</span>
   <span class="header-hint">Klik for at folde ud/ind</span>
 </div>
+
 <div id="card-list"></div>
+
 <div class="footer">
   Højreklik på token → <em>Edit Stat Block</em> for at tilføje<br/>
-  Højreklik → <em>View Stat Block</em> for fuld visning
+  Højreklik → <em>View Stat Block</em> for fuld pop-up
 </div>
 
 <script type="module">
 import OBR from "https://cdn.jsdelivr.net/npm/@owlbear-rodeo/sdk@2.3.0/+esm";
+
 const EXT_ID = "com.symbaroum.statblocks";
-const BASE = "https://voncotta.github.io/Statblock-Importer-for-Owlbear";
+const BASE   = "https://voncotta.github.io/Statblock-Importer-for-Owlbear";
 
 const ATTRS = [
-  {id:'acc',label:'Accurate'},{id:'cun',label:'Cunning'},
-  {id:'dis',label:'Discreet'},{id:'per',label:'Persuasive'},
-  {id:'qui',label:'Quick'},{id:'res',label:'Resolute'},
-  {id:'str',label:'Strong'},{id:'vig',label:'Vigilant'},
+  {id:'acc',label:'Accurate'},  {id:'cun',label:'Cunning'},
+  {id:'dis',label:'Discreet'},  {id:'per',label:'Persuasive'},
+  {id:'qui',label:'Quick'},     {id:'res',label:'Resolute'},
+  {id:'str',label:'Strong'},    {id:'vig',label:'Vigilant'},
 ];
-const DV={'1D4':2,'1D4+1':3,'1D6':3,'1D6+1':4,'1D8':4,'1D8+1':5,'1D10':5,'1D10+1':6,'1D12':6,'1D12+1':7};
 
-function attrClass(v){const n=parseInt(v);if(isNaN(n))return 'attr-mid';return n<=7?'attr-low':n>=14?'attr-high':'attr-mid';}
-function romanLevel(lv){const m={i:'I',ii:'II',iii:'III',I:'I',II:'II',III:'III',Novice:'Novice',Adept:'Adept',Master:'Master',novice:'Novice',adept:'Adept',master:'Master'};return m[lv]||lv;}
+const DV = {
+  '1D4':2,'1D4+1':3,'1D6':3,'1D6+1':4,
+  '1D8':4,'1D8+1':5,'1D10':5,'1D10+1':6,
+  '1D12':6,'1D12+1':7
+};
+function dv(d){ return DV[d]||0; }
 
-function getDerived(state){
-  const a=state.attrs||{},f=state.fields||{};
-  const str=parseInt(a.str)||10,qui=parseInt(a.qui)||10;
-  let tough=Math.max(10,str);if(f['d-tough-ov'])tough=parseInt(f['d-tough-ov'])||tough;
-  let pain=Math.ceil(str/2);if(f['d-pain-ov'])pain=parseInt(f['d-pain-ov'])||pain;
-  return{tough,pain,def:qui,init:qui};
+const A_DMG_MODS = [
+  {name:'Iron Fist',        cats:['Single','Long','Heavy','Natural','Unarmed','Shield'], nov:0,adp:2,mst:4},
+  {name:'Backstab',         cats:['Single','Short','Long','Heavy','Natural','Unarmed'],  nov:2,adp:2,mst:4},
+  {name:'Natural Warrior',  cats:['Unarmed','Natural'],                                  nov:0,adp:0,mst:3},
+  {name:'Axe Artist',       cats:['Single','Heavy'],                                     nov:0,adp:0,mst:2},
+  {name:'Beast Lore',       cats:['Single','Long','Heavy','Natural','Unarmed','Bow','Crossbow','Throwing','Short'], nov:0,adp:2,mst:3},
+  {name:'Blood Combat',     cats:['Single','Long','Heavy','Natural','Unarmed'],          nov:0,adp:4,mst:4},
+  {name:'Feat of Strength', cats:['Single','Long','Heavy','Natural','Unarmed'],          nov:0,adp:0,mst:2},
+  {name:'Hunter Instinct',  cats:['Bow','Crossbow','Throwing'],                          nov:0,adp:2,mst:2},
+  {name:'Rune Tattoo',      cats:['Single','Long','Heavy','Natural','Unarmed'],          nov:0,adp:0,mst:2},
+];
+
+const AB_SHORT = {
+  'Acrobatics':       'Dodge Free Attacks (Quick); jump up; use enemy as shield.',
+  'Axe Artist':       'Short-end stuns+Free Attack; double-strike; +2/hit (master).',
+  'Backstab':         'From Adv.: +2/+4 extra; may bleed 2/turn; use Discreet for attacks.',
+  'Beast Lore':       'Recall monster stats; +2/+3 vs chosen category.',
+  'Beserker':         '+3 melee in frenzy (Defense base 5); ignore 2; full rage (master).',
+  'Blood Combat':     'Tough ½: 2nd chance attacks. >½: +4 melee. Heal from dmg (master).',
+  'Bodyguard':        'Intercept blows aimed at ally; Free Attack vs attacker (master).',
+  'Channeling':       'Receive/redirect/transfer corruption.',
+  'Cheap Shot':       '3 damage; Free Attack; trip; 3 riposte after enemy attacks.',
+  'Dominate':         'Persuasive in melee; force hesitation; subdue enemies.',
+  'Ensnare':          '2nd chance to ensnare/bring down; strangling 3/turn ignoring armor.',
+  'Equestrian':       'Cavalry charge +3/+5; sweeping attacks.',
+  'Feat of Strength': 'Toughness = Strong+5; 2nd chance on Strong bloodied; +2 melee (master).',
+  'Feint':            'Attack/defend with Discreet; surprise Advantage; Free Attack.',
+  'Flailer':          'Jointed gains Ensnaring; secondary 4; chain attacks.',
+  'Hammer Rythm':     'Destroy/disarm shields; push + Free Attack; two hammer attacks/action.',
+  'Hunter Instinct':  'Appointed: 2nd chance ranged, +2, Free Attack on move.',
+  'Iron Fist':        'Use Strong for melee; +2 / +4 melee bonus.',
+  'Knive Play':       'Quick for attacks; two knife attacks; force too-close range.',
+  'Leader':           'Persuasive as Resolute; +2 vs focused target; share Persuasive.',
+  'Man-at-Arms':      'Armor +1 tier; no Quick penalty from armor (adept+); Quick vs armor-ignoring.',
+  'Mantle Dance':     '+1 Defense; blind+Free Attack; Ensnaring mantle.',
+  'Marksman':         'Bow→5, crossbow→6; crippling shots; armor-piercing (master).',
+  'Medicus':          'Heal 2–4 Toughness/day (Cunning); diagnose disease/poison.',
+  'Natural Warrior':  'Unarmed 3; double attack (adept); +3/hit (master).',
+  'Opportunist':      '2nd chance / active abilities on Free Attacks from withdrawing.',
+  'Poisoner':         'Apply poison Free Action; dose lasts combat; one tier higher (master).',
+  'Polearm Mastery':  'Long +1 tier; Free Attack entering melee; keep at bay.',
+  'Quick Draw':       'Draw/reload Free Action; switch weapons; pour elixir.',
+  'Rapid Fire':       'Two/three arrows per combat action.',
+  'Rapid Reflexes':   'Half AoE damage; swap position after defense; act first.',
+  'Recovery':         'Regain 2–4 Toughness (Resolute, once/day).',
+  'Ritualist':        'Learn/perform rituals (1/3/6 total).',
+  'Rune Tattoo':      '+2 armor/hit; regen 1/turn; +2 weapon (master).',
+  'Shield Fighter':   'Weapon +1 tier; shield +2 Defense; bash 2–4 + knock prone.',
+  'Sixth Sense':      'Vigilant for ranged/Initiative/Defense; fight in darkness.',
+  'Staff Fighting':   '+1/+2 Defense; Free Attack after defend; knock prone.',
+  'Steadfast':        '2nd chance vs ongoing effects; attackers take 3 (master).',
+  'Sword Saint':      'Precise sword 5 (→6 master); Free Attack after Defense; unlimited ripostes.',
+  'Symbolism':        'Draw power symbols; Free Action activation; flaming air runes.',
+  'Tactician':        'Cunning for Initiative/Defense/attacks (not heavy).',
+  'Theurgy':          'No perm. Corruption from Theurgy; +2 healing/holy effects.',
+  'Twin Attack':      'Two-weapon: 4+3 / 4+4 / 5+4.',
+  'Two-Handed Force': 'Heavy →6; returning swing; ignore Armor (master).',
+  'Two-Handed Finesse':'Two-handed swords gain Long; push with Strong; chain attacks.',
+  'Wrestling':        'Grapple → throw 2/pin; counter-throw 2–3 + Free Attack.',
+};
+
+const TRAIT_DEFP = {
+  'Robust':       {i:2, ii:3, iii:4},
+  'Robust (Race)':{i:2, ii:3, iii:4},
+};
+
+function getEffAttr(attrs, abilities, attrId) {
+  const base = parseInt(attrs[attrId]) || 10;
+  const attrName = {
+    acc:'Accurate', cun:'Cunning', dis:'Discreet', per:'Persuasive',
+    qui:'Quick', res:'Resolute', str:'Strong', vig:'Vigilant'
+  }[attrId];
+  const excKey = 'Exceptional Attribute - ' + attrName;
+  const exc = (abilities||[]).find(a => a.name === excKey);
+  const bonus = exc ? (exc.level==='Novice'?1 : exc.level==='Adept'?2 : 3) : 0;
+  return base + bonus;
 }
 
-function getArmorStr(state){
-  const f=state.fields||{};
-  if(f['armor-custom-val'])return f['armor-custom-val'];
-  const m={'Light Armor':4,'Medium Armor':6,'Heavy Armor':8};
-  const av=state.armorVal||'';
-  return m[av]!==undefined?String(m[av]):av||'—';
-}
-
-function renderWeapon(wRow){
-  const w=wRow.weapon;
-  let name,attr,dmg,fx=[];
-  if(!w||w==='custom'){
-    name=wRow.customName||'Custom';
-    attr=wRow.attrUsed||'Accurate';
-    dmg=wRow.customDmg||'—';
-    if(wRow.customQ)fx=[...wRow.customQ.split(',').map(s=>s.trim()).filter(Boolean)];
-    if(wRow.effect)fx.push(wRow.effect);
-    if(wRow.effects)fx=[...fx,...wRow.effects];
-  } else {
-    name=w.n;attr=wRow.attrUsed||'Accurate';
-    dmg=String(DV[w.d]||w.d);
-    const quals=w.q?w.q.split(',').map(s=>s.trim()).filter(Boolean):[];
-    fx=[...quals];
-    if(wRow.effect)fx.push(wRow.effect);
-    if(wRow.effects)fx=[...fx,...wRow.effects];
+function parseArmor(state) {
+  const f = state.fields || {};
+  const av = state.armorVal || '';
+  if (!av) return { name: '—', val: 0, defBonus: 0 };
+  if (av.startsWith('custom')) {
+    return {
+      name: f['armor-custom-name'] || 'Custom',
+      val: parseInt(f['armor-custom-val']) || 0,
+      defBonus: parseInt(f['armor-custom-def']) || 0,
+    };
   }
-  let h=`<div class="wp-block">`;
-  h+=`<span class="wp-name">${name}</span>`;
-  h+=`<span class="wp-badge">${attr}</span>`;
-  h+=`<span class="wp-badge">Dmg ${dmg}</span>`;
-  if(fx.length)h+=`<div class="wp-fx">✦ ${fx.join(' · ')}</div>`;
-  h+=`</div>`;
-  return h;
+  const parts = av.split('|');
+  let val = parseInt(parts[1]) || 0;
+  const defBonus = parseInt(parts[2]) || 0;
+  const maa = (state.abilities||[]).find(a => a.name==='Man-at-Arms');
+  if (maa) val += 1;
+  return { name: parts[0]||av, val, defBonus };
 }
 
-function renderStatblock(state,tokenName){
-  if(!state)return`<div style="padding:14px;font-style:italic;color:var(--muted);font-size:1rem;">Ingen stat block tilknyttet.</div>`;
-  const f=state.fields||{};
-  const derived=getDerived(state);
-  const name=f.name||tokenName;
-  const race=state.raceCustom||f.race||'';
-  const shadow=f.shadow||'';
-
-  let h=`<div class="sb">`;
-  h+=`<div class="sb-name">${name}</div>`;
-  if(race||shadow)h+=`<div class="sb-sub">${[race,shadow?'Shadow: '+shadow:''].filter(Boolean).join(' · ')}</div>`;
-  if(f.description)h+=`<div class="sb-desc">${f.description}</div>`;
-
-  h+=`<hr class="thick"/>`;
-
-  // Derived stats
-  const av=state.armorVal||'';
-  const shieldB={'Shield':2,'Blessed Shield':4}[av]||0;
-  const defStr=shieldB?`${derived.def} (+${shieldB})`:String(derived.def);
-  h+=`<div class="derived-grid">`;
-  h+=`<div class="derived-cell"><div class="derived-label">Toughness</div><div class="derived-value">${derived.tough}</div></div>`;
-  h+=`<div class="derived-cell"><div class="derived-label">Pain Threshold</div><div class="derived-value">${derived.pain}</div></div>`;
-  h+=`<div class="derived-cell"><div class="derived-label">Defense</div><div class="derived-value">${defStr}</div></div>`;
-  h+=`<div class="derived-cell"><div class="derived-label">Initiative</div><div class="derived-value">${derived.init}</div></div>`;
-  h+=`</div>`;
-
-  const armor=getArmorStr(state);
-  if(armor&&armor!=='—')h+=`<div style="font-size:0.92rem;color:var(--muted);margin-bottom:4px">Armor: <strong style="color:var(--text)">${armor}</strong></div>`;
-
-  h+=`<hr class="thin"/>`;
-
-  // Attributes
-  h+=`<div class="attr-grid">`;
-  ATTRS.forEach(a=>{
-    const v=state.attrs?.[a.id]||'—';
-    h+=`<div class="attr-cell"><div class="attr-label">${a.label}</div><div class="attr-value ${attrClass(v)}">${v}</div></div>`;
+function getTraitDefPenalty(traits) {
+  let total = 0;
+  (traits||[]).forEach(t => {
+    const defMap = TRAIT_DEFP[t.name];
+    if (!defMap) return;
+    const lv = t.level || 'i';
+    total += defMap[lv] || 0;
   });
-  h+=`</div>`;
+  return total;
+}
 
-  // Weapons
-  const weapons=(state.weapons||[]).filter(w=>w.weapon||w.customName);
-  if(weapons.length){
-    h+=`<hr class="thin"/><div class="section-head">Weapons</div>`;
-    weapons.forEach(w=>h+=renderWeapon(w));
+function calcDerived(state) {
+  const a = state.attrs || {};
+  const f = state.fields || {};
+  const abilities = state.abilities || [];
+  const traits = state.traits || [];
+
+  const str = getEffAttr(a, abilities, 'str');
+  const qui = getEffAttr(a, abilities, 'qui');
+  const vig = getEffAttr(a, abilities, 'vig');
+
+  let tAuto = Math.max(10, str);
+  const fos = abilities.find(ab => ab.name === 'Feat of Strength');
+  if (fos && fos.level === 'Master') tAuto = str + 5;
+  const tOver = f['d-tough-ov'];
+  const toughness = (tOver !== undefined && tOver !== '') ? (parseInt(tOver)||tAuto) : tAuto;
+
+  const pAuto = Math.ceil(str / 2);
+  const pOver = f['d-pain-ov'];
+  const pain = (pOver !== undefined && pOver !== '') ? (parseInt(pOver)||pAuto) : pAuto;
+
+  const ss = abilities.find(ab => ab.name === 'Sixth Sense' &&
+    (ab.level === 'Adept' || ab.level === 'Master'));
+  const baseAttr = ss ? vig : qui;
+  const qMod = 10 - baseAttr;
+
+  const armor = parseArmor(state);
+  const maa = abilities.find(ab => ab.name === 'Man-at-Arms');
+  const maaAdept = maa && (maa.level === 'Adept' || maa.level === 'Master');
+  const armorDef = maaAdept ? 0 : armor.defBonus;
+
+  const robustAdd = getTraitDefPenalty(traits);
+
+  const sfight = abilities.find(ab => ab.name === 'Staff Fighting');
+  const sfightBonus = sfight ? (sfight.level === 'Novice' ? 1 : 2) : 0;
+
+  const mantle = abilities.find(ab => ab.name === 'Mantle Dance');
+  const mantleBonus = mantle ? 1 : 0;
+
+  const defense = qMod + armorDef + robustAdd - sfightBonus - mantleBonus;
+
+  const parts = [`Quick ${baseAttr}`];
+  if (ss) parts[0] = `Vigilant ${vig} (Sixth Sense)`;
+  if (armorDef && !maaAdept) parts.push(`armor +${armorDef}`);
+  if (maaAdept) parts.push('Man-at-Arms (no impeding)');
+  if (robustAdd) parts.push(`Robust +${robustAdd}`);
+  if (sfightBonus) parts.push(`Staff Fighting −${sfightBonus}`);
+  if (mantleBonus) parts.push(`Mantle Dance −${mantleBonus}`);
+  const defNote = parts.join(', ');
+
+  const cun = getEffAttr(a, abilities, 'cun');
+  const tactician = abilities.find(ab => ab.name === 'Tactician');
+  const initiative = tactician ? cun : baseAttr;
+
+  return { toughness, pain, defense, defNote, initiative };
+}
+
+function computeWeaponDmg(w, abilities) {
+  if (!w || w === 'custom') return { baseVal: 0, total: 0, notes: [] };
+  let base = dv(w.d);
+
+  const hasAb = name => abilities.find(a => a.name === name);
+  const abLevel = name => { const a = hasAb(name); return a ? a.level : null; };
+
+  const mkm = hasAb('Marksman');
+  if (mkm && w.cat === 'Bow')      base = dv('1D10');
+  if (mkm && w.cat === 'Crossbow') base = dv('1D12');
+
+  if (hasAb('Two-Handed Force') && w.cat === 'Heavy') base = dv('1D12');
+
+  const pm = hasAb('Polearm Mastery');
+  if (pm && w.cat === 'Long') {
+    if (w.d==='1D6') base=dv('1D8');
+    else if (w.d==='1D8') base=dv('1D10');
+    else if (w.d==='1D8+1') base=dv('1D10+1');
   }
 
-  // Abilities
-  if(state.abilities?.length){
-    h+=`<hr class="thin"/><div class="section-head">Abilities</div>`;
-    state.abilities.forEach(a=>{
-      h+=`<div class="ab-block"><span class="ab-name">${a.name}</span><span class="ab-level">${a.level||'Novice'}</span></div>`;
-    });
+  const ss = hasAb('Sword Saint');
+  if (ss && w.q && w.q.includes('Precise') && w.cat === 'Single') {
+    base = abLevel('Sword Saint') === 'Master' ? dv('1D12') : dv('1D10');
   }
 
-  // Traits
-  if(state.traits?.length){
-    h+=`<hr class="thin"/><div class="section-head">Traits</div>`;
-    state.traits.forEach(t=>{
-      h+=`<div class="ab-block"><span class="ab-name">${t.name}</span>${t.level?`<span class="ab-level">${romanLevel(t.level)}</span>`:''}</div>`;
-    });
+  const sf = hasAb('Shield Fighter');
+  if (sf && w.cat === 'Single' && base < dv('1D10')) base = Math.min(base + 1, dv('1D10'));
+  if (sf && w.cat === 'Short'  && base < dv('1D8'))  base = Math.min(base + 1, dv('1D8'));
+
+  let bonus = 0;
+  const notes = [];
+  A_DMG_MODS.forEach(m => {
+    const found = abilities.find(a => a.name === m.name);
+    if (!found || !m.cats.includes(w.cat)) return;
+    const lv = found.level === 'Novice' ? m.nov : found.level === 'Adept' ? m.adp : m.mst;
+    if (lv > 0) { bonus += lv; notes.push(m.name); }
+  });
+
+  return { baseVal: base, bonus, total: base + bonus, notes };
+}
+
+function getAttackFormat(w, wRow, abilities) {
+  if (!w || w === 'custom') return null;
+  const calc = computeWeaponDmg(w, abilities);
+  const mainDmg = calc.total;
+
+  const twin = abilities.find(a => a.name === 'Twin Attack');
+  const rf   = abilities.find(a => a.name === 'Rapid Fire');
+  const nw   = abilities.find(a => a.name === 'Natural Warrior');
+  const aa   = abilities.find(a => a.name === 'Axe Artist');
+
+  if (rf && w.cat === 'Bow') {
+    const cnt = rf.level === 'Master' ? 3 : 2;
+    return `${cnt} arrows at ${mainDmg}`;
+  }
+  if (twin && (w.cat === 'Single' || w.cat === 'Short' || w.cat === 'Unarmed')) {
+    const off = twin.level === 'Novice' ? 3 : 4;
+    const main = twin.level === 'Master' ? 5 : mainDmg;
+    return `2 attacks: ${main} / ${off}`;
+  }
+  if (nw && (nw.level === 'Adept' || nw.level === 'Master') &&
+      (w.cat === 'Unarmed' || w.cat === 'Natural')) {
+    return `2 attacks: ${mainDmg} / ${mainDmg}`;
+  }
+  if (aa && aa.level === 'Adept' && (w.cat === 'Single' || w.cat === 'Heavy')) {
+    return `2 attacks: ${Math.max(1,mainDmg-1)} / ${Math.max(1,mainDmg-1)}`;
+  }
+  return null;
+}
+
+function calcCR(state) {
+  const abilities = state.abilities || [];
+  const traits = state.traits || [];
+  const tradOnly = ['Witchcraft','Theurgy','Wizadry','Troll Singing','Sorcery','Ritualist','Mystical Power'];
+  let pts = 0;
+  abilities.forEach(a => {
+    if (a.name.startsWith('Exceptional Attribute')) return;
+    if (tradOnly.includes(a.name)) { pts += 1; return; }
+    const lv = a.level === 'Novice' ? 1 : a.level === 'Adept' ? 2 : 3;
+    pts += lv;
+  });
+  traits.forEach(t => {
+    if (['Armored','Acidic Attack','Acidic Blood','Alternative Damage','Corrupting Attack',
+         'Enthrall','Gravely Cold','Manifestation','Natural Weapon','Poisonous','Poison Spit',
+         'Regeneration','Robust','Spirit Form','Swarm','Terrify','Undead','Web','Wings',
+         'Exceptionally Strong'].includes(t.name)) pts += 1;
+  });
+  if (pts === 0) return { cr: 'Weak', cls: 'cr-weak' };
+  if (pts <= 3)  return { cr: 'Ordinary', cls: 'cr-ordinary' };
+  if (pts <= 7)  return { cr: 'Challenging', cls: 'cr-challenging' };
+  if (pts <= 13) return { cr: 'Strong', cls: 'cr-strong' };
+  return { cr: 'Mighty', cls: 'cr-mighty' };
+}
+
+function renderWeapon(wRow, abilities) {
+  const w = wRow.weapon;
+  let name, attr, dmgStr, fx = [];
+
+  if (!w || w === 'custom') {
+    name = wRow.customName || 'Custom';
+    attr = wRow.attrUsed || 'Accurate';
+    dmgStr = wRow.customDmg || '—';
+    if (wRow.customQ) fx = wRow.customQ.split(',').map(s=>s.trim()).filter(Boolean);
+    if (wRow.effect) fx.push(wRow.effect);
+    if (wRow.effects) fx = [...fx, ...wRow.effects];
+  } else {
+    name = w.n;
+    attr = wRow.attrUsed || 'Accurate';
+    const calc = computeWeaponDmg(w, abilities);
+    const fmt = getAttackFormat(w, wRow, abilities);
+    dmgStr = fmt || String(calc.total);
+    const quals = w.q ? w.q.split(',').map(s=>s.trim()).filter(Boolean) : [];
+    fx = [...quals];
+    if (wRow.effect) fx.push(wRow.effect);
+    if (wRow.effects) fx = [...fx, ...wRow.effects];
   }
 
-  // Boons & Burdens
-  if(state.boons?.length){
-    h+=`<hr class="thin"/><div class="section-head">Boons &amp; Burdens</div>`;
-    state.boons.forEach(b=>{
-      h+=`<div class="boon-line ${b.burden?'burden-line':''}">`;
-      h+=`${b.burden?'⚠ ':'✦ '}<strong>${b.name}</strong>${b.qty>1?' ×'+b.qty:''}</div>`;
-    });
-  }
-
-  // Equipment
-  if(state.equip?.length){
-    h+=`<hr class="thin"/><div class="section-head">Equipment</div>`;
-    h+=`<div style="font-size:1rem;line-height:1.6;color:var(--text)">${state.equip.map(e=>e.qty>1?`${e.name} ×${e.qty}`:e.name).join(', ')}</div>`;
-  }
-
-  // Tactics
-  if(f.tactics){
-    h+=`<hr class="thin"/><div class="section-head">Tactics</div>`;
-    h+=`<div class="tactics">${f.tactics}</div>`;
-  }
-
-  // GM Notes
-  if(state._gmNotes){
-    h+=`<hr class="thin"/><div class="section-head" style="color:#e05555">GM Notes</div>`;
-    h+=`<div class="gm-notes">${state._gmNotes}</div>`;
-  }
-
-  h+=`</div>`;
+  let h = `<div class="wp-block">`;
+  h += `<span class="wp-name">${name}</span>`;
+  h += `<span class="wp-badge">${attr}</span>`;
+  h += `<span class="wp-badge">Dmg ${dmgStr}</span>`;
+  if (fx.length) h += `<div class="wp-fx">✦ ${fx.join(' · ')}</div>`;
+  h += `</div>`;
   return h;
 }
 
-const openCards=new Set();
+function romanLevel(lv) {
+  const m = {i:'I',ii:'II',iii:'III',I:'I',II:'II',III:'III'};
+  return m[lv] || lv;
+}
 
-function renderList(items){
-  const listEl=document.getElementById("card-list");
-  const withSB=items.filter(i=>i.layer==="CHARACTER"&&i.metadata?.[`${EXT_ID}/statblock`]);
+function attrClass(v) {
+  const n = parseInt(v);
+  if (isNaN(n)) return 'attr-mid';
+  return n <= 7 ? 'attr-low' : n >= 14 ? 'attr-high' : 'attr-mid';
+}
 
-  if(!withSB.length){
-    listEl.innerHTML=`<div class="empty"><span class="icon">📜</span>Ingen stat blocks endnu.<br/><span style="font-size:0.95rem">Højreklik på en token → <em>Edit Stat Block</em></span></div>`;
+function renderStatblock(state, tokenName) {
+  if (!state) return `<div style="padding:14px;font-style:italic;color:var(--text2)">Ingen stat block tilknyttet.</div>`;
+
+  const f         = state.fields    || {};
+  const abilities = state.abilities || [];
+  const traits    = state.traits    || [];
+  const boons     = state.boons     || [];
+  const weapons   = (state.weapons  || []).filter(w => w.weapon || w.customName);
+  const equip     = state.equip     || [];
+
+  const name   = f.name || tokenName;
+  const race   = state.raceCustom || f.race || '';
+  const shadow = f.shadow || '';
+
+  const derived = calcDerived(state);
+  const armor   = parseArmor(state);
+  const cr      = calcCR(state);
+
+  const defSign = derived.defense > 0 ? '+' : '';
+  const defStr  = defSign + derived.defense;
+
+  let h = `<div class="sb">`;
+
+  h += `<div class="sb-name">${name}</div>`;
+  if (race || shadow)
+    h += `<div class="sb-sub">${[race, shadow ? 'Shadow: '+shadow : ''].filter(Boolean).join(' · ')}</div>`;
+  if (f.description)
+    h += `<div class="sb-desc">${f.description}</div>`;
+
+  h += `<hr class="sb-divider-thick"/>`;
+
+  h += `<div class="section-head">Resistance &amp; Traits</div>`;
+  h += `<div class="resistance-badge ${cr.cls}">${cr.cr}</div>`;
+  if (traits.length) {
+    const traitStr = traits.map(t => {
+      const lvl = t.level ? ' '+romanLevel(t.level) : '';
+      return `<em>${t.name}${lvl}</em>`;
+    }).join(', ');
+    h += `<div class="traits-line">${traitStr}</div>`;
+  }
+
+  h += `<hr class="sb-divider"/>`;
+
+  h += `<div class="derived-grid">`;
+  h += `<div class="derived-cell"><div class="derived-label">Toughness</div><div class="derived-value">${derived.toughness}</div></div>`;
+  h += `<div class="derived-cell"><div class="derived-label">Pain Threshold</div><div class="derived-value">${derived.pain}</div></div>`;
+  h += `<div class="derived-cell"><div class="derived-label">Defense</div><div class="derived-value">${defStr}</div><div class="derived-note">${derived.defNote}</div></div>`;
+  h += `<div class="derived-cell"><div class="derived-label">Initiative</div><div class="derived-value">${derived.initiative}</div></div>`;
+  h += `</div>`;
+
+  if (armor.val > 0)
+    h += `<div class="armor-row">Armor: <strong>${armor.name} ${armor.val}</strong></div>`;
+
+  h += `<hr class="sb-divider"/>`;
+
+  h += `<div class="attr-grid">`;
+  ATTRS.forEach(a => {
+    const v = getEffAttr(state.attrs||{}, abilities, a.id);
+    h += `<div class="attr-cell"><div class="attr-label">${a.label}</div><div class="attr-value ${attrClass(v)}">${v}</div></div>`;
+  });
+  h += `</div>`;
+
+  if (weapons.length) {
+    h += `<hr class="sb-divider"/><div class="section-head">Weapons</div>`;
+    weapons.forEach(w => h += renderWeapon(w, abilities));
+  }
+
+  const displayAbilities = abilities.filter(a => !a.name.startsWith('Exceptional Attribute'));
+  if (displayAbilities.length) {
+    h += `<hr class="sb-divider"/><div class="section-head">Abilities</div>`;
+    displayAbilities.forEach(a => {
+      const short = AB_SHORT[a.name] || '';
+      h += `<div class="ab-block">`;
+      h += `<span class="ab-name">${a.name}</span>`;
+      h += `<span class="ab-level">${a.level}</span>`;
+      if (short) h += `<div class="ab-note">${short}</div>`;
+      h += `</div>`;
+    });
+  }
+
+  if (traits.length) {
+    h += `<hr class="sb-divider"/><div class="section-head">Traits</div>`;
+    traits.forEach(t => {
+      h += `<div class="tr-block">`;
+      h += `<span class="tr-name">${t.name}</span>`;
+      if (t.level) h += `<span class="tr-level">${romanLevel(t.level)}</span>`;
+      h += `</div>`;
+    });
+  }
+
+  if (boons.length) {
+    h += `<hr class="sb-divider"/><div class="section-head">Boons &amp; Burdens</div>`;
+    boons.forEach(b => {
+      h += `<div class="boon-line ${b.burden?'burden':''}">`;
+      h += `${b.burden ? '⚠ ' : '✦ '}<strong>${b.name}</strong>`;
+      if (b.qty > 1) h += ` ×${b.qty}`;
+      h += `</div>`;
+    });
+  }
+
+  if (equip.length) {
+    h += `<hr class="sb-divider"/><div class="section-head">Equipment</div>`;
+    h += `<div class="equip-line">${equip.map(e => typeof e === 'string' ? e : (e.qty > 1 ? `${e.name} ×${e.qty}` : e.name)).join(', ')}</div>`;
+  }
+
+  if (f.tactics) {
+    h += `<hr class="sb-divider"/><div class="section-head">Tactics</div>`;
+    h += `<div class="tactics">${f.tactics}</div>`;
+  }
+
+  if (state._gmNotes) {
+    h += `<hr class="sb-divider"/><div class="section-head" style="color:var(--red-bright)">GM Notes</div>`;
+    h += `<div class="gm-notes">${state._gmNotes}</div>`;
+  }
+
+  h += `</div>`;
+  return h;
+}
+
+const openCards = new Set();
+
+function renderList(items) {
+  const listEl = document.getElementById("card-list");
+  const withSB = items.filter(i => i.layer === "CHARACTER" && i.metadata?.[`${EXT_ID}/statblock`]);
+
+  if (!withSB.length) {
+    listEl.innerHTML = `<div class="empty">
+      <span class="icon">📜</span>
+      Ingen stat blocks endnu.<br/>
+      <span style="font-size:0.92rem">Højreklik på en token → <em>Edit Stat Block</em></span>
+    </div>`;
     return;
   }
 
-  listEl.innerHTML="";
-  withSB.forEach(item=>{
-    const sb=item.metadata[`${EXT_ID}/statblock`];
-    const f=sb.fields||{};
-    const name=f.name||item.name||"Ukendt";
-    const race=sb.raceCustom||f.race||'';
-    const isOpen=openCards.has(item.id);
+  listEl.innerHTML = "";
+  withSB.forEach(item => {
+    const sb   = item.metadata[`${EXT_ID}/statblock`];
+    const f    = sb.fields || {};
+    const name = f.name || item.name || "Ukendt";
+    const race = sb.raceCustom || f.race || '';
+    const isOpen = openCards.has(item.id);
 
-    const card=document.createElement("div");
-    card.className="card";
-    card.innerHTML=`
-      <div class="card-header ${isOpen?'open':''}" data-id="${item.id}">
-        <div class="card-icon">${name[0]?.toUpperCase()||'?'}</div>
-        <div class="card-title">
+    const card = document.createElement("div");
+    card.className = "card";
+    card.innerHTML = `
+      <div class="card-header ${isOpen?'open':''}">
+        <div class="card-avatar">${(name[0]||'?').toUpperCase()}</div>
+        <div class="card-info">
           <div class="card-name">${name}</div>
-          <div class="card-meta">${race||'Karakter'}</div>
+          <div class="card-sub">${race||'Karakter'}</div>
         </div>
-        <div class="card-toggle ${isOpen?'open':''}">▼</div>
+        <div class="card-chevron ${isOpen?'open':''}">▼</div>
       </div>
       <div class="card-body ${isOpen?'open':''}">
-        ${renderStatblock(sb,name)}
+        ${renderStatblock(sb, name)}
       </div>`;
 
-    card.querySelector(".card-header").addEventListener("click",()=>{
-      if(openCards.has(item.id))openCards.delete(item.id);
+    card.querySelector(".card-header").addEventListener("click", () => {
+      if (openCards.has(item.id)) openCards.delete(item.id);
       else openCards.add(item.id);
       renderList(items);
     });
@@ -289,21 +862,42 @@ function renderList(items){
   });
 }
 
-OBR.onReady(async()=>{
+OBR.onReady(async () => {
   OBR.contextMenu.create({
-    id:`${EXT_ID}/view`,
-    icons:[{icon:`${BASE}/eye.svg`,label:"View Stat Block",filter:{every:[{key:"layer",value:"CHARACTER"}]}}],
-    onClick(){OBR.popover.open({id:`${EXT_ID}/view-popover`,url:`${BASE}/statblock-popover.html`,height:620,width:440});}
-  });
-  OBR.contextMenu.create({
-    id:`${EXT_ID}/edit`,
-    icons:[{icon:`${BASE}/edit.svg`,label:"Edit Stat Block",filter:{every:[{key:"layer",value:"CHARACTER"}]}}],
-    onClick(){OBR.popover.open({id:`${EXT_ID}/edit-popover`,url:`${BASE}/edit-statblock.html`,height:560,width:380});}
+    id: `${EXT_ID}/view`,
+    icons: [{
+      icon: `${BASE}/eye.svg`,
+      label: "View Stat Block",
+      filter: { every: [{ key: "layer", value: "CHARACTER" }] }
+    }],
+    onClick() {
+      OBR.popover.open({
+        id: `${EXT_ID}/view-popover`,
+        url: `${BASE}/statblock-popover.html`,
+        height: 620, width: 440
+      });
+    }
   });
 
-  const items=await OBR.scene.items.getItems();
+  OBR.contextMenu.create({
+    id: `${EXT_ID}/edit`,
+    icons: [{
+      icon: `${BASE}/edit.svg`,
+      label: "Edit Stat Block",
+      filter: { every: [{ key: "layer", value: "CHARACTER" }] }
+    }],
+    onClick() {
+      OBR.popover.open({
+        id: `${EXT_ID}/edit-popover`,
+        url: `${BASE}/edit-statblock.html`,
+        height: 560, width: 380
+      });
+    }
+  });
+
+  const items = await OBR.scene.items.getItems();
   renderList(items);
-  OBR.scene.items.onChange(updated=>renderList(updated));
+  OBR.scene.items.onChange(updated => renderList(updated));
 });
 </script>
 </body>
