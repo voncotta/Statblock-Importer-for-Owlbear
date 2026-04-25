@@ -3,7 +3,7 @@
   "description": "GM-only stat blocks for Symbaroum tokens.",
   "author": "GM",
   "version": "2.0.0",
-  "manifestVersion": 1,
+  "manifest_Version": 1,
   "icon": "/icon.svg",
   "action": {
     "title": "GM Stat Blocks",
