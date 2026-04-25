@@ -6,7 +6,7 @@
   "manifest_version": 1,
   "action": {
     "title": "GM Stat Blocks",
-    "icon": "/icon.svg",
+    "icon": "https://voncotta.github.io/Statblock-Importer-for-Owlbear/icon.svg",
     "popover": "https://voncotta.github.io/Statblock-Importer-for-Owlbear/action.html",
     "height": 520,
     "width": 360
