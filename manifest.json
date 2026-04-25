@@ -2,17 +2,14 @@
   "name": "Symbaroum GM Stat Blocks",
   "description": "GM-only stat blocks for Symbaroum tokens.",
   "author": "GM",
-  "version": "2.0.0",
+  "version": "1.0.0",
   "manifest_version": 1,
-  "icon": "/icon.svg",
   "action": {
     "title": "GM Stat Blocks",
     "icon": "/icon.svg",
-    "popover": {
-      "url": "/action.html",
-      "height": 520,
-      "width": 360
-    }
+    "popover": "/action.html",
+    "height": 520,
+    "width": 360
   },
   "background": {
     "url": "/background.html"
