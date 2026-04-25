@@ -16,130 +16,80 @@
     .header h1{font-family:'Cinzel',serif;font-size:1.1rem;color:var(--gold);}
     .header p{font-size:11px;color:var(--ui-muted);font-style:italic;margin-top:2px;}
     .token-list{padding:8px 0;}
-    .token-entry{
-      padding:8px 14px;border-bottom:1px solid var(--ui-border);
-      cursor:pointer;transition:background 0.12s;display:flex;align-items:center;gap:10px;
-    }
+    .token-entry{padding:8px 14px;border-bottom:1px solid var(--ui-border);cursor:pointer;transition:background 0.12s;display:flex;align-items:center;gap:10px;}
     .token-entry:hover{background:#4a3820;}
-    .token-icon{
-      width:32px;height:32px;background:var(--red);border-radius:50%;
-      display:flex;align-items:center;justify-content:center;
-      color:#f5e6c8;font-family:'Cinzel',serif;font-size:13px;font-weight:700;
-      border:2px solid var(--gold);flex-shrink:0;
-    }
+    .token-icon{width:32px;height:32px;background:var(--red);border-radius:50%;display:flex;align-items:center;justify-content:center;color:#f5e6c8;font-family:'Cinzel',serif;font-size:13px;font-weight:700;border:2px solid var(--gold);flex-shrink:0;}
     .token-info{flex:1;min-width:0;}
     .token-name{font-family:'Cinzel',serif;font-size:0.95rem;color:var(--gold);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-    .token-meta{font-size:11px;color:var(--ui-muted);font-style:italic;margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-    .token-attrs{font-size:11px;color:var(--ui-muted);margin-top:2px;}
-    .attr-chip{display:inline-block;background:#221808;border:1px solid var(--ui-border);border-radius:2px;padding:0 4px;margin-right:2px;font-size:10px;}
-    .attr-chip span{color:var(--gold);margin-left:2px;}
-    .hp-dot{display:inline-block;width:9px;height:9px;border-radius:50%;flex-shrink:0;}
+    .token-meta{font-size:11px;color:var(--ui-muted);font-style:italic;margin-top:1px;}
     .empty{padding:36px 18px;text-align:center;color:var(--ui-muted);font-style:italic;}
     .empty .icon{font-size:34px;display:block;margin-bottom:8px;opacity:0.35;}
     .footer-hint{padding:10px 14px;border-top:1px solid var(--ui-border);font-size:11px;color:#5b4a30;line-height:1.6;}
     .footer-hint strong{color:var(--ui-muted);}
-    .section-sep{padding:4px 14px;font-size:10px;letter-spacing:0.08em;text-transform:uppercase;color:#5b4a30;background:rgba(0,0,0,0.15);}
   </style>
 </head>
 <body>
 <div class="header">
   <h1>📜 GM Stat Blocks</h1>
-  <p>Symbaroum · Private GM View</p>
+  <p>Symbaroum · Privat GM visning</p>
 </div>
-
 <div id="token-list" class="token-list">
-  <div class="empty"><span class="icon">⚔️</span>Loading…</div>
+  <div class="empty"><span class="icon">⚔️</span>Indlæser…</div>
 </div>
-
 <div class="footer-hint">
-  <strong>Right-click a character token</strong> to import a JSON from the Symbaroum Stat Block Creator or view its block.<br/>
-  Click a name above to select that token on the map.
+  <strong>Højreklik på en token</strong> for at importere eller se dens stat block.
 </div>
 
 <script type="module">
 import OBR from "https://cdn.jsdelivr.net/npm/@owlbear-rodeo/sdk@2.3.0/+esm";
 const EXT_ID = "com.symbaroum.statblocks";
-
-const KEY_ATTRS = ['acc','cun','dis','per','qui','res','str','vig'];
-const ATTR_SHORT = {acc:'Acc',cun:'Cun',dis:'Dis',per:'Per',qui:'Qui',res:'Res',str:'Str',vig:'Vig'};
-
-function hpColor(cur, max) {
-  if (!max) return "#888";
-  const p = cur/max;
-  return p>0.6?"#3a8a2a":p>0.3?"#c8a020":"#aa2020";
-}
-
-function getDerivedToughness(state) {
-  const str = parseInt(state.attrs?.str)||10;
-  const ov  = state.fields?.['d-tough-ov'];
-  return ov ? parseInt(ov)||Math.max(10,str) : Math.max(10,str);
-}
-
-function renderList(items) {
-  const listEl = document.getElementById("token-list");
-  const withSB = items.filter(i => i.layer==="CHARACTER" && i.metadata?.[`${EXT_ID}/statblock`]);
-
-  if (!withSB.length) {
-    listEl.innerHTML=`<div class="empty"><span class="icon">📜</span>No stat blocks assigned yet.<br/><span style="font-size:12px">Right-click any character token → <em>Edit Stat Block</em></span></div>`;
-    return;
-  }
-
-  listEl.innerHTML="";
-
-  // Group: PCs (abilities/traits only) vs Monsters — rough heuristic based on presence of race vs creature shadow
-  const pcs=[], monsters=[];
-  withSB.forEach(item => {
-    const sb = item.metadata[`${EXT_ID}/statblock`];
-    const race = sb.raceSelVal||'';
-    // Monsters tend to have monster traits/no race or race like 'Goblin','Bear' etc.
-    const isPC = ['Human','Elf','Dwarf','Changeling','Ogre','Goblin (PC)','Halfling'].some(r=>race.includes(r));
-    if (isPC) pcs.push(item); else monsters.push(item);
-  });
-
-  const renderGroup = (label, group) => {
-    if (!group.length) return;
-    listEl.innerHTML += `<div class="section-sep">${label}</div>`;
-    group.forEach(item => {
-      const sb = item.metadata[`${EXT_ID}/statblock`];
-      const f  = sb.fields||{};
-      const name  = f.name || item.name || "Unknown";
-      const race  = sb.raceCustom || f.race || '';
-      const tough = getDerivedToughness(sb);
-      const hp    = sb._hpCurrent;
-      const init  = sb.attrs?.qui || '—';
-
-      const attrChips = KEY_ATTRS.map(a => {
-        const v = sb.attrs?.[a]; if (!v) return '';
-        return `<span class="attr-chip">${ATTR_SHORT[a]}<span>${v}</span></span>`;
-      }).join('');
-
-      const hpDot = hp !== undefined
-        ? `<span class="hp-dot" style="background:${hpColor(hp, tough)};margin-right:4px"></span>`
-        : '';
-
-      const div = document.createElement("div");
-      div.className = "token-entry";
-      div.innerHTML = `
-        <div class="token-icon">${name[0]?.toUpperCase()||'?'}</div>
-        <div class="token-info">
-          <div class="token-name">${hpDot}${name}</div>
-          <div class="token-meta">${race||''}${race&&init?' · ':''}${init?'Init '+init:''}</div>
-          <div class="token-attrs">${attrChips}</div>
-        </div>`;
-      div.addEventListener("click", async () => await OBR.player.select([item.id]));
-      listEl.appendChild(div);
-    });
-  };
-
-  renderGroup("Characters", pcs);
-  renderGroup("Monsters & NPCs", monsters);
-}
+const BASE = "https://voncotta.github.io/Statblock-Importer-for-Owlbear";
 
 OBR.onReady(async () => {
+
+  // Sæt context menu op
+  OBR.contextMenu.create({
+    id: `${EXT_ID}/view`,
+    icons: [{ icon: `${BASE}/eye.svg`, label: "View Stat Block", filter: { every: [{ key: "layer", value: "CHARACTER" }] }}],
+    onClick() { OBR.popover.open({ id: `${EXT_ID}/view-popover`, url: `${BASE}/statblock-popover.html`, height: 620, width: 440 }); }
+  });
+
+  OBR.contextMenu.create({
+    id: `${EXT_ID}/edit`,
+    icons: [{ icon: `${BASE}/edit.svg`, label: "Edit Stat Block", filter: { every: [{ key: "layer", value: "CHARACTER" }] }}],
+    onClick() { OBR.popover.open({ id: `${EXT_ID}/edit-popover`, url: `${BASE}/edit-statblock.html`, height: 560, width: 380 }); }
+  });
+
+  // Vis tokens med stat blocks
   const items = await OBR.scene.items.getItems();
   renderList(items);
   OBR.scene.items.onChange(updated => renderList(updated));
 });
+
+function renderList(items) {
+  const listEl = document.getElementById("token-list");
+  const withSB = items.filter(i => i.layer === "CHARACTER" && i.metadata?.[`${EXT_ID}/statblock`]);
+  if (!withSB.length) {
+    listEl.innerHTML = `<div class="empty"><span class="icon">📜</span>Ingen stat blocks tilknyttet endnu.<br/><span style="font-size:12px">Højreklik på en token → <em>Edit Stat Block</em></span></div>`;
+    return;
+  }
+  listEl.innerHTML = "";
+  withSB.forEach(item => {
+    const sb = item.metadata[`${EXT_ID}/statblock`];
+    const name = sb.fields?.name || item.name || "Ukendt";
+    const race = sb.raceCustom || sb.fields?.race || '';
+    const div = document.createElement("div");
+    div.className = "token-entry";
+    div.innerHTML = `
+      <div class="token-icon">${name[0]?.toUpperCase() || '?'}</div>
+      <div class="token-info">
+        <div class="token-name">${name}</div>
+        <div class="token-meta">${race || 'Karakter'}</div>
+      </div>`;
+    div.addEventListener("click", async () => await OBR.player.select([item.id]));
+    listEl.appendChild(div);
+  });
+}
 </script>
 </body>
 </html>
