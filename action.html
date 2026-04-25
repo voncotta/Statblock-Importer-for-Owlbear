@@ -25,7 +25,7 @@
       background: var(--bg);
       color: var(--text);
       font-family: 'Crimson Text', Georgia, serif;
-      font-size: 16px;
+      font-size: 15px;
       min-height: 100vh;
     }
 
@@ -380,6 +380,9 @@ import OBR from "https://cdn.jsdelivr.net/npm/@owlbear-rodeo/sdk@2.3.0/+esm";
 const EXT_ID = "com.symbaroum.statblocks";
 const BASE   = "https://voncotta.github.io/Statblock-Importer-for-Owlbear";
 
+// ══════════════════════════════════════════
+// ATTRIBUTE DEFINITIONS
+// ══════════════════════════════════════════
 const ATTRS = [
   {id:'acc',label:'Accurate'},  {id:'cun',label:'Cunning'},
   {id:'dis',label:'Discreet'},  {id:'per',label:'Persuasive'},
@@ -387,6 +390,7 @@ const ATTRS = [
   {id:'str',label:'Strong'},    {id:'vig',label:'Vigilant'},
 ];
 
+// Die → fixed damage value (same as stat block maker)
 const DV = {
   '1D4':2,'1D4+1':3,'1D6':3,'1D6+1':4,
   '1D8':4,'1D8+1':5,'1D10':5,'1D10+1':6,
@@ -394,6 +398,7 @@ const DV = {
 };
 function dv(d){ return DV[d]||0; }
 
+// Ability damage mods — same as data.js A_DMG_MODS
 const A_DMG_MODS = [
   {name:'Iron Fist',        cats:['Single','Long','Heavy','Natural','Unarmed','Shield'], nov:0,adp:2,mst:4},
   {name:'Backstab',         cats:['Single','Short','Long','Heavy','Natural','Unarmed'],  nov:2,adp:2,mst:4},
@@ -406,6 +411,7 @@ const A_DMG_MODS = [
   {name:'Rune Tattoo',      cats:['Single','Long','Heavy','Natural','Unarmed'],          nov:0,adp:0,mst:2},
 ];
 
+// Short ability notes (same as AB_SHORT in logic.js)
 const AB_SHORT = {
   'Acrobatics':       'Dodge Free Attacks (Quick); jump up; use enemy as shield.',
   'Axe Artist':       'Short-end stuns+Free Attack; double-strike; +2/hit (master).',
@@ -455,11 +461,15 @@ const AB_SHORT = {
   'Wrestling':        'Grapple → throw 2/pin; counter-throw 2–3 + Free Attack.',
 };
 
+// Trait defense penalties (Robust family)
 const TRAIT_DEFP = {
-  'Robust':       {i:2, ii:3, iii:4},
+  'Robust':      {i:2, ii:3, iii:4},
   'Robust (Race)':{i:2, ii:3, iii:4},
 };
 
+// ══════════════════════════════════════════
+// HELPER: get effective attribute including Exceptional Attribute bonus
+// ══════════════════════════════════════════
 function getEffAttr(attrs, abilities, attrId) {
   const base = parseInt(attrs[attrId]) || 10;
   const attrName = {
@@ -472,6 +482,9 @@ function getEffAttr(attrs, abilities, attrId) {
   return base + bonus;
 }
 
+// ══════════════════════════════════════════
+// HELPER: parse armorVal string "Name|protection|defBonus"
+// ══════════════════════════════════════════
 function parseArmor(state) {
   const f = state.fields || {};
   const av = state.armorVal || '';
@@ -486,11 +499,15 @@ function parseArmor(state) {
   const parts = av.split('|');
   let val = parseInt(parts[1]) || 0;
   const defBonus = parseInt(parts[2]) || 0;
+  // Man-at-Arms (any level): +1 armor value
   const maa = (state.abilities||[]).find(a => a.name==='Man-at-Arms');
   if (maa) val += 1;
   return { name: parts[0]||av, val, defBonus };
 }
 
+// ══════════════════════════════════════════
+// HELPER: get trait defense penalty total
+// ══════════════════════════════════════════
 function getTraitDefPenalty(traits) {
   let total = 0;
   (traits||[]).forEach(t => {
@@ -502,6 +519,9 @@ function getTraitDefPenalty(traits) {
   return total;
 }
 
+// ══════════════════════════════════════════
+// DERIVE STATS FROM JSON STATE
+// ══════════════════════════════════════════
 function calcDerived(state) {
   const a = state.attrs || {};
   const f = state.fields || {};
@@ -512,45 +532,63 @@ function calcDerived(state) {
   const qui = getEffAttr(a, abilities, 'qui');
   const vig = getEffAttr(a, abilities, 'vig');
 
+  // Toughness
   let tAuto = Math.max(10, str);
+  // Feat of Strength Master: Toughness = Strong + 5
   const fos = abilities.find(ab => ab.name === 'Feat of Strength');
   if (fos && fos.level === 'Master') tAuto = str + 5;
   const tOver = f['d-tough-ov'];
   const toughness = (tOver !== undefined && tOver !== '') ? (parseInt(tOver)||tAuto) : tAuto;
 
+  // Pain Threshold
   const pAuto = Math.ceil(str / 2);
   const pOver = f['d-pain-ov'];
   const pain = (pOver !== undefined && pOver !== '') ? (parseInt(pOver)||pAuto) : pAuto;
 
+  // Defense
   const ss = abilities.find(ab => ab.name === 'Sixth Sense' &&
     (ab.level === 'Adept' || ab.level === 'Master'));
   const baseAttr = ss ? vig : qui;
-  const qMod = 10 - baseAttr;
+  const qMod = 10 - baseAttr; // negative = fast creature = easier to dodge
 
+  // Armor defense bonus
   const armor = parseArmor(state);
   const maa = abilities.find(ab => ab.name === 'Man-at-Arms');
   const maaAdept = maa && (maa.level === 'Adept' || maa.level === 'Master');
   const armorDef = maaAdept ? 0 : armor.defBonus;
 
+  // Robust / Robust (Race) trait penalty
   const robustAdd = getTraitDefPenalty(traits);
 
+  // Staff Fighting: improves defense by 1 (novice) or 2 (adept/master)
   const sfight = abilities.find(ab => ab.name === 'Staff Fighting');
   const sfightBonus = sfight ? (sfight.level === 'Novice' ? 1 : 2) : 0;
 
+  // Mantle Dance: improves defense by 1
   const mantle = abilities.find(ab => ab.name === 'Mantle Dance');
   const mantleBonus = mantle ? 1 : 0;
 
-  const defense = qMod + armorDef + robustAdd - sfightBonus - mantleBonus;
+  // Shield Fighter: carrying a shield gives +2 defense improvement
+  const hasShield = (state.weapons||[]).some(w =>
+    w.weapon && w.weapon !== 'custom' && w.weapon.cat === 'Shield'
+  );
+  const sfAb = abilities.find(ab => ab.name === 'Shield Fighter');
+  const shieldDefBonus = (sfAb && hasShield) ? 2 : 0;
 
-  const parts = [`Quick ${baseAttr}`];
-  if (ss) parts[0] = `Vigilant ${vig} (Sixth Sense)`;
+  const defense = qMod + armorDef + robustAdd - sfightBonus - mantleBonus - shieldDefBonus;
+
+  // Build note
+  const parts = [ss ? `Vigilant ${vig} (Sixth Sense)` : `Quick ${baseAttr}`];
   if (armorDef && !maaAdept) parts.push(`armor +${armorDef}`);
   if (maaAdept) parts.push('Man-at-Arms (no impeding)');
   if (robustAdd) parts.push(`Robust +${robustAdd}`);
   if (sfightBonus) parts.push(`Staff Fighting −${sfightBonus}`);
   if (mantleBonus) parts.push(`Mantle Dance −${mantleBonus}`);
+  if (shieldDefBonus) parts.push(`Shield Fighter −${shieldDefBonus}`);
   const defNote = parts.join(', ');
 
+  // Initiative = Quick (or Vigilant with Sixth Sense)
+  // Tactician (any level): Cunning for Initiative
   const cun = getEffAttr(a, abilities, 'cun');
   const tactician = abilities.find(ab => ab.name === 'Tactician');
   const initiative = tactician ? cun : baseAttr;
@@ -558,6 +596,9 @@ function calcDerived(state) {
   return { toughness, pain, defense, defNote, initiative };
 }
 
+// ══════════════════════════════════════════
+// COMPUTE WEAPON DAMAGE
+// ══════════════════════════════════════════
 function computeWeaponDmg(w, abilities) {
   if (!w || w === 'custom') return { baseVal: 0, total: 0, notes: [] };
   let base = dv(w.d);
@@ -565,12 +606,15 @@ function computeWeaponDmg(w, abilities) {
   const hasAb = name => abilities.find(a => a.name === name);
   const abLevel = name => { const a = hasAb(name); return a ? a.level : null; };
 
+  // Marksman
   const mkm = hasAb('Marksman');
   if (mkm && w.cat === 'Bow')      base = dv('1D10');
   if (mkm && w.cat === 'Crossbow') base = dv('1D12');
 
+  // Two-Handed Force
   if (hasAb('Two-Handed Force') && w.cat === 'Heavy') base = dv('1D12');
 
+  // Polearm Mastery
   const pm = hasAb('Polearm Mastery');
   if (pm && w.cat === 'Long') {
     if (w.d==='1D6') base=dv('1D8');
@@ -578,14 +622,19 @@ function computeWeaponDmg(w, abilities) {
     else if (w.d==='1D8+1') base=dv('1D10+1');
   }
 
+  // Sword Saint (Precise single-hand)
   const ss = hasAb('Sword Saint');
   if (ss && w.q && w.q.includes('Precise') && w.cat === 'Single') {
     base = abLevel('Sword Saint') === 'Master' ? dv('1D12') : dv('1D10');
   }
 
+  // Shield Fighter: +1 die tier for Single and Short
   const sf = hasAb('Shield Fighter');
   if (sf && w.cat === 'Single' && base < dv('1D10')) base = Math.min(base + 1, dv('1D10'));
   if (sf && w.cat === 'Short'  && base < dv('1D8'))  base = Math.min(base + 1, dv('1D8'));
+
+  // Iron Fist: use Strong for melee — already reflected in attribute choice
+  // but the +2/+4 bonus is added below via A_DMG_MODS
 
   let bonus = 0;
   const notes = [];
@@ -599,15 +648,16 @@ function computeWeaponDmg(w, abilities) {
   return { baseVal: base, bonus, total: base + bonus, notes };
 }
 
+// Multi-attack string
 function getAttackFormat(w, wRow, abilities) {
   if (!w || w === 'custom') return null;
   const calc = computeWeaponDmg(w, abilities);
   const mainDmg = calc.total;
 
-  const twin = abilities.find(a => a.name === 'Twin Attack');
-  const rf   = abilities.find(a => a.name === 'Rapid Fire');
-  const nw   = abilities.find(a => a.name === 'Natural Warrior');
-  const aa   = abilities.find(a => a.name === 'Axe Artist');
+  const twin   = abilities.find(a => a.name === 'Twin Attack');
+  const rf     = abilities.find(a => a.name === 'Rapid Fire');
+  const nw     = abilities.find(a => a.name === 'Natural Warrior');
+  const aa     = abilities.find(a => a.name === 'Axe Artist');
 
   if (rf && w.cat === 'Bow') {
     const cnt = rf.level === 'Master' ? 3 : 2;
@@ -628,6 +678,9 @@ function getAttackFormat(w, wRow, abilities) {
   return null;
 }
 
+// ══════════════════════════════════════════
+// CHALLENGE RATING
+// ══════════════════════════════════════════
 function calcCR(state) {
   const abilities = state.abilities || [];
   const traits = state.traits || [];
@@ -640,6 +693,7 @@ function calcCR(state) {
     pts += lv;
   });
   traits.forEach(t => {
+    // Monster/Monstrous traits count
     if (['Armored','Acidic Attack','Acidic Blood','Alternative Damage','Corrupting Attack',
          'Enthrall','Gravely Cold','Manifestation','Natural Weapon','Poisonous','Poison Spit',
          'Regeneration','Robust','Spirit Form','Swarm','Terrify','Undead','Web','Wings',
@@ -652,6 +706,9 @@ function calcCR(state) {
   return { cr: 'Mighty', cls: 'cr-mighty' };
 }
 
+// ══════════════════════════════════════════
+// RENDER WEAPON BLOCK
+// ══════════════════════════════════════════
 function renderWeapon(wRow, abilities) {
   const w = wRow.weapon;
   let name, attr, dmgStr, fx = [];
@@ -673,6 +730,13 @@ function renderWeapon(wRow, abilities) {
     fx = [...quals];
     if (wRow.effect) fx.push(wRow.effect);
     if (wRow.effects) fx = [...fx, ...wRow.effects];
+    if (calc.notes.length) fx = [...fx, ...calc.notes.map(n => `+${A_DMG_MODS.find(m=>m.name===n)?.adp||0} (${n})`)];
+    // simplify: just show notes as-is
+    // Actually show cleaner: remove duplicates from calc.notes vs quals overlap
+    // Reset fx to show weapon qualities + attack format note
+    fx = [...quals];
+    if (wRow.effect) fx.push(wRow.effect);
+    if (wRow.effects) fx = [...fx, ...wRow.effects];
   }
 
   let h = `<div class="wp-block">`;
@@ -684,28 +748,37 @@ function renderWeapon(wRow, abilities) {
   return h;
 }
 
+// ══════════════════════════════════════════
+// ROMAN LEVEL
+// ══════════════════════════════════════════
 function romanLevel(lv) {
   const m = {i:'I',ii:'II',iii:'III',I:'I',II:'II',III:'III'};
   return m[lv] || lv;
 }
 
+// ══════════════════════════════════════════
+// ATTR CLASS
+// ══════════════════════════════════════════
 function attrClass(v) {
   const n = parseInt(v);
   if (isNaN(n)) return 'attr-mid';
   return n <= 7 ? 'attr-low' : n >= 14 ? 'attr-high' : 'attr-mid';
 }
 
+// ══════════════════════════════════════════
+// RENDER FULL STAT BLOCK
+// ══════════════════════════════════════════
 function renderStatblock(state, tokenName) {
   if (!state) return `<div style="padding:14px;font-style:italic;color:var(--text2)">Ingen stat block tilknyttet.</div>`;
 
-  const f         = state.fields    || {};
-  const abilities = state.abilities || [];
-  const traits    = state.traits    || [];
-  const boons     = state.boons     || [];
-  const weapons   = (state.weapons  || []).filter(w => w.weapon || w.customName);
-  const equip     = state.equip     || [];
+  const f        = state.fields   || {};
+  const abilities= state.abilities|| [];
+  const traits   = state.traits   || [];
+  const boons    = state.boons    || [];
+  const weapons  = (state.weapons || []).filter(w => w.weapon || w.customName);
+  const equip    = state.equip    || [];
 
-  const name   = f.name || tokenName;
+  const name   = f.name   || tokenName;
   const race   = state.raceCustom || f.race || '';
   const shadow = f.shadow || '';
 
@@ -718,6 +791,7 @@ function renderStatblock(state, tokenName) {
 
   let h = `<div class="sb">`;
 
+  // Name + sub
   h += `<div class="sb-name">${name}</div>`;
   if (race || shadow)
     h += `<div class="sb-sub">${[race, shadow ? 'Shadow: '+shadow : ''].filter(Boolean).join(' · ')}</div>`;
@@ -726,10 +800,12 @@ function renderStatblock(state, tokenName) {
 
   h += `<hr class="sb-divider-thick"/>`;
 
+  // Resistance + Traits line
   h += `<div class="section-head">Resistance &amp; Traits</div>`;
   h += `<div class="resistance-badge ${cr.cls}">${cr.cr}</div>`;
   if (traits.length) {
     const traitStr = traits.map(t => {
+      const def = TRAIT_DEFP[t.name] ? '' : ''; // just show all traits
       const lvl = t.level ? ' '+romanLevel(t.level) : '';
       return `<em>${t.name}${lvl}</em>`;
     }).join(', ');
@@ -738,6 +814,7 @@ function renderStatblock(state, tokenName) {
 
   h += `<hr class="sb-divider"/>`;
 
+  // Derived stats
   h += `<div class="derived-grid">`;
   h += `<div class="derived-cell"><div class="derived-label">Toughness</div><div class="derived-value">${derived.toughness}</div></div>`;
   h += `<div class="derived-cell"><div class="derived-label">Pain Threshold</div><div class="derived-value">${derived.pain}</div></div>`;
@@ -750,6 +827,7 @@ function renderStatblock(state, tokenName) {
 
   h += `<hr class="sb-divider"/>`;
 
+  // Attributes
   h += `<div class="attr-grid">`;
   ATTRS.forEach(a => {
     const v = getEffAttr(state.attrs||{}, abilities, a.id);
@@ -757,11 +835,13 @@ function renderStatblock(state, tokenName) {
   });
   h += `</div>`;
 
+  // Weapons
   if (weapons.length) {
     h += `<hr class="sb-divider"/><div class="section-head">Weapons</div>`;
     weapons.forEach(w => h += renderWeapon(w, abilities));
   }
 
+  // Abilities (excluding Exceptional Attribute)
   const displayAbilities = abilities.filter(a => !a.name.startsWith('Exceptional Attribute'));
   if (displayAbilities.length) {
     h += `<hr class="sb-divider"/><div class="section-head">Abilities</div>`;
@@ -775,6 +855,7 @@ function renderStatblock(state, tokenName) {
     });
   }
 
+  // Traits (full)
   if (traits.length) {
     h += `<hr class="sb-divider"/><div class="section-head">Traits</div>`;
     traits.forEach(t => {
@@ -785,6 +866,7 @@ function renderStatblock(state, tokenName) {
     });
   }
 
+  // Boons & Burdens
   if (boons.length) {
     h += `<hr class="sb-divider"/><div class="section-head">Boons &amp; Burdens</div>`;
     boons.forEach(b => {
@@ -795,16 +877,19 @@ function renderStatblock(state, tokenName) {
     });
   }
 
+  // Equipment
   if (equip.length) {
     h += `<hr class="sb-divider"/><div class="section-head">Equipment</div>`;
     h += `<div class="equip-line">${equip.map(e => typeof e === 'string' ? e : (e.qty > 1 ? `${e.name} ×${e.qty}` : e.name)).join(', ')}</div>`;
   }
 
+  // Tactics
   if (f.tactics) {
     h += `<hr class="sb-divider"/><div class="section-head">Tactics</div>`;
     h += `<div class="tactics">${f.tactics}</div>`;
   }
 
+  // GM Notes
   if (state._gmNotes) {
     h += `<hr class="sb-divider"/><div class="section-head" style="color:var(--red-bright)">GM Notes</div>`;
     h += `<div class="gm-notes">${state._gmNotes}</div>`;
@@ -814,6 +899,9 @@ function renderStatblock(state, tokenName) {
   return h;
 }
 
+// ══════════════════════════════════════════
+// CARD LIST STATE
+// ══════════════════════════════════════════
 const openCards = new Set();
 
 function renderList(items) {
@@ -862,7 +950,11 @@ function renderList(items) {
   });
 }
 
+// ══════════════════════════════════════════
+// OBR INIT
+// ══════════════════════════════════════════
 OBR.onReady(async () => {
+  // Context menu — View
   OBR.contextMenu.create({
     id: `${EXT_ID}/view`,
     icons: [{
@@ -879,6 +971,7 @@ OBR.onReady(async () => {
     }
   });
 
+  // Context menu — Edit
   OBR.contextMenu.create({
     id: `${EXT_ID}/edit`,
     icons: [{
@@ -895,6 +988,7 @@ OBR.onReady(async () => {
     }
   });
 
+  // Load and watch tokens
   const items = await OBR.scene.items.getItems();
   renderList(items);
   OBR.scene.items.onChange(updated => renderList(updated));
