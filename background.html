@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<head><meta charset="UTF-8"/></head>
+<body>
+<script type="module">
+import OBR from "https://cdn.jsdelivr.net/npm/@owlbear-rodeo/sdk@2.3.0/+esm";
+
+const EXT_ID = "com.symbaroum.statblocks";
+const BASE = "https://voncotta.github.io/Statblock-Importer-for-Owlbear";
+
+OBR.onReady(() => {
+  OBR.contextMenu.create({
+    id: `${EXT_ID}/view`,
+    icons: [{
+      icon: "/eye.svg",
+      label: "View Stat Block",
+      filter: { every: [{ key: "layer", value: "CHARACTER" }] },
+    }],
+    onClick(context) {
+      OBR.popover.open({
+        id: `${EXT_ID}/view-popover`,
+        url: `${BASE}/statblock-popover.html`,
+        height: 620,
+        width: 440,
+      });
+    },
+  });
+
+  OBR.contextMenu.create({
+    id: `${EXT_ID}/edit`,
+    icons: [{
+      icon: "/edit.svg",
+      label: "Edit Stat Block",
+      filter: { every: [{ key: "layer", value: "CHARACTER" }] },
+    }],
+    onClick(context) {
+      OBR.popover.open({
+        id: `${EXT_ID}/edit-popover`,
+        url: `${BASE}/edit-statblock.html`,
+        height: 560,
+        width: 380,
+      });
+    },
+  });
+});
+</script>
+</body>
+</html>
