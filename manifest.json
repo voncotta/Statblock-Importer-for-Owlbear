@@ -3,7 +3,7 @@
   "description": "Import stat blocks from the Symbaroum Stat Block Creator and view them on tokens. GM eyes only.",
   "author": "GM",
   "version": "2.0.0",
-  "manifestVersion": 1,
+  "manifestVersion": 2,
   "icon": "/icon.svg",
   "tokens": [],
   "action": {
