@@ -7,73 +7,79 @@
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Crimson+Text:ital,wght@0,400;0,600;1,400;1,600&display=swap" rel="stylesheet"/>
   <style>
     :root{
-      --bg:#2a1f0e;--surface:#3d2e14;--border:#6b5030;
-      --text:#e8dfc8;--muted:#8b7355;--gold:#c4a055;--red:#6b2020;
-      --parchment:#e8dfc8;--ink:#1a1208;--brown:#8b7355;
+      --bg:#1a1a2e;--surface:#16213e;--border:#2a2a4a;
+      --text:#e0e0e0;--muted:#888;--gold:#c4a055;--red:#8b1a1a;
+      --hover:#0f3460;
     }
     *{box-sizing:border-box;margin:0;padding:0;}
-    body{background:var(--bg);color:var(--text);font-family:'Crimson Text',Georgia,serif;font-size:15px;}
-    .header{background:var(--surface);border-bottom:2px solid var(--gold);padding:8px 12px;display:flex;align-items:center;justify-content:space-between;}
-    .header h1{font-family:'Cinzel',serif;font-size:1rem;color:var(--gold);}
-    .header-hint{font-size:10px;color:var(--muted);font-style:italic;}
+    body{background:var(--bg);color:var(--text);font-family:'Crimson Text',Georgia,serif;font-size:17px;min-height:100vh;}
+
+    .header{background:var(--surface);border-bottom:1px solid var(--border);padding:10px 14px;display:flex;align-items:center;justify-content:space-between;}
+    .header h1{font-family:'Cinzel',serif;font-size:1.05rem;color:var(--gold);letter-spacing:0.05em;}
+    .header-hint{font-size:11px;color:var(--muted);font-style:italic;}
+
+    /* Token cards */
     .card{border-bottom:1px solid var(--border);}
-    .card-header{display:flex;align-items:center;gap:8px;padding:9px 12px;cursor:pointer;transition:background 0.12s;user-select:none;}
-    .card-header:hover{background:#4a3820;}
-    .card-header.open{background:#3d2e14;border-bottom:1px solid var(--border);}
-    .card-icon{width:30px;height:30px;border-radius:50%;background:var(--red);border:2px solid var(--gold);display:flex;align-items:center;justify-content:center;font-family:'Cinzel',serif;font-size:13px;font-weight:700;color:#f5e6c8;flex-shrink:0;}
+    .card-header{display:flex;align-items:center;gap:10px;padding:10px 14px;cursor:pointer;transition:background 0.12s;user-select:none;}
+    .card-header:hover{background:var(--hover);}
+    .card-header.open{background:var(--hover);border-bottom:1px solid var(--border);}
+    .card-icon{width:34px;height:34px;border-radius:50%;background:var(--red);border:2px solid var(--gold);display:flex;align-items:center;justify-content:center;font-family:'Cinzel',serif;font-size:14px;font-weight:700;color:#f5e6c8;flex-shrink:0;}
     .card-title{flex:1;min-width:0;}
-    .card-name{font-family:'Cinzel',serif;font-size:0.95rem;color:var(--gold);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-    .card-meta{font-size:10px;color:var(--muted);font-style:italic;}
-    .card-toggle{color:var(--muted);font-size:11px;transition:transform 0.2s;flex-shrink:0;}
+    .card-name{font-family:'Cinzel',serif;font-size:1rem;color:var(--gold);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+    .card-meta{font-size:11px;color:var(--muted);font-style:italic;margin-top:1px;}
+    .card-toggle{color:var(--muted);font-size:12px;transition:transform 0.2s;flex-shrink:0;}
     .card-toggle.open{transform:rotate(180deg);}
-    .card-body{display:none;background:var(--parchment);color:var(--ink);}
+
+    /* Stat block body — Owlbear dark theme */
+    .card-body{display:none;background:#0d1117;color:var(--text);}
     .card-body.open{display:block;}
+    .sb{padding:14px 16px 12px;font-size:17px;}
 
-    /* Stat block */
-    .sb{padding:14px 16px 12px;font-size:15px;}
-    .sb-name{font-family:'Cinzel',serif;font-size:1.25rem;font-weight:700;margin-bottom:3px;color:var(--ink);}
-    .sb-sub{font-style:italic;font-size:0.9rem;color:#5c3d1e;margin-bottom:7px;}
-    hr.thick{border:none;border-top:2px solid var(--brown);margin:6px 0;}
-    hr.thin{border:none;border-top:1px solid var(--brown);margin:5px 0;}
+    .sb-name{font-family:'Cinzel',serif;font-size:1.3rem;font-weight:700;color:var(--gold);margin-bottom:3px;}
+    .sb-sub{font-style:italic;font-size:0.9rem;color:var(--muted);margin-bottom:8px;}
+    .sb-desc{font-size:0.95rem;font-style:italic;color:var(--muted);margin-bottom:8px;line-height:1.5;}
 
-    /* Derived table */
-    .sb-table{width:100%;border-collapse:collapse;font-size:0.92rem;margin:4px 0;}
-    .sb-table tr:nth-child(odd) td{background:rgba(196,180,138,0.28);}
-    .sb-table td{padding:4px 6px;vertical-align:top;line-height:1.4;}
-    .sb-table td:first-child{font-weight:700;white-space:nowrap;width:36%;color:#5c3d1e;}
+    hr.thick{border:none;border-top:2px solid var(--gold);margin:8px 0;opacity:0.4;}
+    hr.thin{border:none;border-top:1px solid var(--border);margin:6px 0;}
+
+    /* Derived stats */
+    .derived-grid{display:grid;grid-template-columns:1fr 1fr;gap:4px;margin:6px 0;}
+    .derived-cell{background:var(--surface);border:1px solid var(--border);border-radius:4px;padding:5px 8px;}
+    .derived-label{font-size:10px;text-transform:uppercase;letter-spacing:0.07em;color:var(--muted);margin-bottom:1px;}
+    .derived-value{font-family:'Cinzel',serif;font-size:1.1rem;color:var(--text);font-weight:600;}
 
     /* Attributes */
     .attr-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;margin:6px 0;}
-    .attr-cell{background:rgba(196,180,138,0.3);border:1px solid var(--brown);border-radius:2px;padding:4px 2px;text-align:center;}
-    .attr-label{font-size:8px;text-transform:uppercase;letter-spacing:0.06em;color:#5c3d1e;font-weight:700;}
-    .attr-value{font-family:'Cinzel',serif;font-size:1.05rem;font-weight:700;}
-    .attr-low{color:#2a6e1a;}.attr-mid{color:#1a1208;}.attr-high{color:#6b2020;}
+    .attr-cell{background:var(--surface);border:1px solid var(--border);border-radius:4px;padding:5px 2px;text-align:center;}
+    .attr-label{font-size:8px;text-transform:uppercase;letter-spacing:0.06em;color:var(--muted);font-weight:700;}
+    .attr-value{font-family:'Cinzel',serif;font-size:1.1rem;font-weight:700;}
+    .attr-low{color:#4ec94e;}.attr-mid{color:var(--text);}.attr-high{color:#e05555;}
 
     /* Section heading */
-    .section-head{font-family:'Cinzel',serif;font-size:0.75rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#6b2020;border-bottom:1px solid var(--brown);padding-bottom:2px;margin:8px 0 5px;}
+    .section-head{font-family:'Cinzel',serif;font-size:0.75rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--gold);border-bottom:1px solid var(--border);padding-bottom:3px;margin:10px 0 6px;opacity:0.9;}
 
     /* Weapons */
-    .wp-block{margin-bottom:6px;font-size:0.92rem;line-height:1.5;}
-    .wp-name{font-weight:700;}
-    .wp-badge{display:inline-block;background:rgba(196,180,138,0.4);border:1px solid var(--brown);border-radius:2px;padding:0px 5px;font-size:0.82rem;margin-left:3px;}
-    .wp-fx{font-style:italic;color:#5c3d1e;font-size:0.88rem;margin-top:1px;}
+    .wp-block{margin-bottom:8px;font-size:1rem;line-height:1.5;}
+    .wp-name{font-weight:700;color:var(--text);}
+    .wp-badge{display:inline-block;background:var(--surface);border:1px solid var(--border);border-radius:3px;padding:1px 6px;font-size:0.82rem;margin-left:3px;color:var(--gold);}
+    .wp-fx{font-style:italic;color:var(--muted);font-size:0.9rem;margin-top:2px;}
 
     /* Abilities & traits */
-    .ab-block{margin-bottom:5px;font-size:0.92rem;line-height:1.5;}
-    .ab-name{font-weight:700;font-style:italic;}
-    .ab-level{display:inline-block;background:#6b2020;color:#f5e6c8;border-radius:2px;padding:1px 5px;margin-left:4px;font-size:0.72rem;font-family:'Cinzel',serif;font-weight:600;font-style:normal;vertical-align:middle;}
+    .ab-block{margin-bottom:6px;font-size:1rem;line-height:1.5;display:flex;align-items:center;gap:6px;}
+    .ab-name{font-weight:700;font-style:italic;color:var(--text);}
+    .ab-level{display:inline-block;background:var(--red);color:#f5e6c8;border-radius:3px;padding:1px 7px;font-size:0.75rem;font-family:'Cinzel',serif;font-weight:600;}
 
     /* Boons */
-    .boon-line{font-size:0.92rem;line-height:1.5;margin-bottom:2px;}
-    .burden-line{color:#8b1a1a;}
+    .boon-line{font-size:1rem;line-height:1.5;margin-bottom:3px;color:var(--text);}
+    .burden-line{color:#e05555;}
 
     /* Tactics & notes */
-    .tactics{font-size:0.92rem;line-height:1.55;font-style:italic;background:rgba(196,180,138,0.2);border-left:3px solid var(--brown);padding:5px 8px;margin-top:4px;}
-    .gm-notes{font-size:0.88rem;line-height:1.5;background:rgba(107,32,32,0.07);border-left:3px solid #6b2020;padding:5px 8px;white-space:pre-wrap;}
+    .tactics{font-size:1rem;line-height:1.55;font-style:italic;background:var(--surface);border-left:3px solid var(--gold);padding:6px 10px;margin-top:4px;border-radius:0 4px 4px 0;opacity:0.9;}
+    .gm-notes{font-size:0.95rem;line-height:1.5;background:rgba(139,26,26,0.15);border-left:3px solid var(--red);padding:6px 10px;white-space:pre-wrap;border-radius:0 4px 4px 0;}
 
-    .empty{padding:30px 16px;text-align:center;color:var(--muted);font-style:italic;}
-    .empty .icon{font-size:28px;display:block;margin-bottom:6px;opacity:0.35;}
-    .footer{padding:8px 12px;border-top:1px solid var(--border);font-size:10px;color:#5b4a30;line-height:1.5;}
+    .empty{padding:36px 16px;text-align:center;color:var(--muted);font-style:italic;font-size:1rem;}
+    .empty .icon{font-size:32px;display:block;margin-bottom:8px;opacity:0.35;}
+    .footer{padding:9px 14px;border-top:1px solid var(--border);font-size:11px;color:var(--muted);line-height:1.6;}
   </style>
 </head>
 <body>
@@ -83,7 +89,8 @@
 </div>
 <div id="card-list"></div>
 <div class="footer">
-  Højreklik på token → <em>Edit Stat Block</em> for at tilføje · <em>View Stat Block</em> for fuld visning
+  Højreklik på token → <em>Edit Stat Block</em> for at tilføje<br/>
+  Højreklik → <em>View Stat Block</em> for fuld visning
 </div>
 
 <script type="module">
@@ -97,7 +104,7 @@ const ATTRS = [
   {id:'qui',label:'Quick'},{id:'res',label:'Resolute'},
   {id:'str',label:'Strong'},{id:'vig',label:'Vigilant'},
 ];
-const DV = {'1D4':2,'1D4+1':3,'1D6':3,'1D6+1':4,'1D8':4,'1D8+1':5,'1D10':5,'1D10+1':6,'1D12':6,'1D12+1':7};
+const DV={'1D4':2,'1D4+1':3,'1D6':3,'1D6+1':4,'1D8':4,'1D8+1':5,'1D10':5,'1D10+1':6,'1D12':6,'1D12+1':7};
 
 function attrClass(v){const n=parseInt(v);if(isNaN(n))return 'attr-mid';return n<=7?'attr-low':n>=14?'attr-high':'attr-mid';}
 function romanLevel(lv){const m={i:'I',ii:'II',iii:'III',I:'I',II:'II',III:'III',Novice:'Novice',Adept:'Adept',Master:'Master',novice:'Novice',adept:'Adept',master:'Master'};return m[lv]||lv;}
@@ -125,20 +132,16 @@ function renderWeapon(wRow){
     name=wRow.customName||'Custom';
     attr=wRow.attrUsed||'Accurate';
     dmg=wRow.customDmg||'—';
-    // both 'effect' and 'effects' for compatibility
-    const e=wRow.effect||'';
-    const es=wRow.effects||[];
-    if(e)fx.push(e);
-    fx=[...fx,...es];
-    if(wRow.customQ)fx=[...wRow.customQ.split(',').map(s=>s.trim()).filter(Boolean),...fx];
+    if(wRow.customQ)fx=[...wRow.customQ.split(',').map(s=>s.trim()).filter(Boolean)];
+    if(wRow.effect)fx.push(wRow.effect);
+    if(wRow.effects)fx=[...fx,...wRow.effects];
   } else {
-    name=w.n;
-    attr=wRow.attrUsed||'Accurate';
+    name=w.n;attr=wRow.attrUsed||'Accurate';
     dmg=String(DV[w.d]||w.d);
     const quals=w.q?w.q.split(',').map(s=>s.trim()).filter(Boolean):[];
-    const e=wRow.effect||'';
-    const es=wRow.effects||[];
-    fx=[...quals,...(e?[e]:[]),...es];
+    fx=[...quals];
+    if(wRow.effect)fx.push(wRow.effect);
+    if(wRow.effects)fx=[...fx,...wRow.effects];
   }
   let h=`<div class="wp-block">`;
   h+=`<span class="wp-name">${name}</span>`;
@@ -149,8 +152,8 @@ function renderWeapon(wRow){
   return h;
 }
 
-function renderStatblock(state, tokenName){
-  if(!state)return `<div style="padding:12px;font-style:italic;color:#5c3d1e;font-size:0.9rem;">Ingen stat block tilknyttet.</div>`;
+function renderStatblock(state,tokenName){
+  if(!state)return`<div style="padding:14px;font-style:italic;color:var(--muted);font-size:1rem;">Ingen stat block tilknyttet.</div>`;
   const f=state.fields||{};
   const derived=getDerived(state);
   const name=f.name||tokenName;
@@ -160,21 +163,25 @@ function renderStatblock(state, tokenName){
   let h=`<div class="sb">`;
   h+=`<div class="sb-name">${name}</div>`;
   if(race||shadow)h+=`<div class="sb-sub">${[race,shadow?'Shadow: '+shadow:''].filter(Boolean).join(' · ')}</div>`;
-  if(f.description)h+=`<div style="font-size:0.9rem;font-style:italic;color:#5c3d1e;margin-bottom:6px;line-height:1.5">${f.description}</div>`;
+  if(f.description)h+=`<div class="sb-desc">${f.description}</div>`;
 
   h+=`<hr class="thick"/>`;
 
   // Derived stats
   const av=state.armorVal||'';
   const shieldB={'Shield':2,'Blessed Shield':4}[av]||0;
-  const defStr=shieldB?`${derived.def} (+${shieldB} shield)`:String(derived.def);
-  h+=`<table class="sb-table">`;
-  h+=`<tr><td>Toughness</td><td>${derived.tough}</td><td>Pain Threshold</td><td>${derived.pain}</td></tr>`;
-  h+=`<tr><td>Defense</td><td>${defStr}</td><td>Initiative</td><td>${derived.init}</td></tr>`;
-  h+=`<tr><td>Armor</td><td colspan="3">${getArmorStr(state)}</td></tr>`;
-  h+=`</table>`;
+  const defStr=shieldB?`${derived.def} (+${shieldB})`:String(derived.def);
+  h+=`<div class="derived-grid">`;
+  h+=`<div class="derived-cell"><div class="derived-label">Toughness</div><div class="derived-value">${derived.tough}</div></div>`;
+  h+=`<div class="derived-cell"><div class="derived-label">Pain Threshold</div><div class="derived-value">${derived.pain}</div></div>`;
+  h+=`<div class="derived-cell"><div class="derived-label">Defense</div><div class="derived-value">${defStr}</div></div>`;
+  h+=`<div class="derived-cell"><div class="derived-label">Initiative</div><div class="derived-value">${derived.init}</div></div>`;
+  h+=`</div>`;
 
-  h+=`<hr class="thick"/>`;
+  const armor=getArmorStr(state);
+  if(armor&&armor!=='—')h+=`<div style="font-size:0.92rem;color:var(--muted);margin-bottom:4px">Armor: <strong style="color:var(--text)">${armor}</strong></div>`;
+
+  h+=`<hr class="thin"/>`;
 
   // Attributes
   h+=`<div class="attr-grid">`;
@@ -219,7 +226,7 @@ function renderStatblock(state, tokenName){
   // Equipment
   if(state.equip?.length){
     h+=`<hr class="thin"/><div class="section-head">Equipment</div>`;
-    h+=`<div style="font-size:0.92rem;line-height:1.6">${state.equip.map(e=>e.qty>1?`${e.name} ×${e.qty}`:e.name).join(', ')}</div>`;
+    h+=`<div style="font-size:1rem;line-height:1.6;color:var(--text)">${state.equip.map(e=>e.qty>1?`${e.name} ×${e.qty}`:e.name).join(', ')}</div>`;
   }
 
   // Tactics
@@ -230,7 +237,7 @@ function renderStatblock(state, tokenName){
 
   // GM Notes
   if(state._gmNotes){
-    h+=`<hr class="thin"/><div class="section-head" style="color:#6b2020">GM Notes</div>`;
+    h+=`<hr class="thin"/><div class="section-head" style="color:#e05555">GM Notes</div>`;
     h+=`<div class="gm-notes">${state._gmNotes}</div>`;
   }
 
@@ -238,14 +245,14 @@ function renderStatblock(state, tokenName){
   return h;
 }
 
-const openCards = new Set();
+const openCards=new Set();
 
 function renderList(items){
   const listEl=document.getElementById("card-list");
   const withSB=items.filter(i=>i.layer==="CHARACTER"&&i.metadata?.[`${EXT_ID}/statblock`]);
 
   if(!withSB.length){
-    listEl.innerHTML=`<div class="empty"><span class="icon">📜</span>Ingen stat blocks endnu.<br/><span style="font-size:11px">Højreklik på en token → <em>Edit Stat Block</em></span></div>`;
+    listEl.innerHTML=`<div class="empty"><span class="icon">📜</span>Ingen stat blocks endnu.<br/><span style="font-size:0.95rem">Højreklik på en token → <em>Edit Stat Block</em></span></div>`;
     return;
   }
 
@@ -269,7 +276,7 @@ function renderList(items){
         <div class="card-toggle ${isOpen?'open':''}">▼</div>
       </div>
       <div class="card-body ${isOpen?'open':''}">
-        ${renderStatblock(sb, name)}
+        ${renderStatblock(sb,name)}
       </div>`;
 
     card.querySelector(".card-header").addEventListener("click",()=>{
@@ -282,7 +289,7 @@ function renderList(items){
   });
 }
 
-OBR.onReady(async ()=>{
+OBR.onReady(async()=>{
   OBR.contextMenu.create({
     id:`${EXT_ID}/view`,
     icons:[{icon:`${BASE}/eye.svg`,label:"View Stat Block",filter:{every:[{key:"layer",value:"CHARACTER"}]}}],
